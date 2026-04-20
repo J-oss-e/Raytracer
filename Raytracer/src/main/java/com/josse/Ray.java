@@ -1,0 +1,27 @@
+package com.josse;
+
+public class Ray {
+
+    private Vector3D origin;
+    private Vector3D direction;
+
+    public Ray() {
+        this.origin = new Vector3D(0, 0, 0);
+        this.direction = new Vector3D(0, 0, 1);
+    }
+
+    public Ray(Vector3D origin, Vector3D direction) {
+        this.origin = origin;
+        this.direction = direction.normalize();
+    }
+
+    public Vector3D pointAt(double t) {
+        return origin.add(direction.scale(t));
+    }
+
+    public Vector3D getOrigin() { return origin; }
+    public Vector3D getDirection() { return direction; }
+
+    public void setOrigin(Vector3D origin) { this.origin = origin; }
+    public void setDirection(Vector3D direction) { this.direction = direction.normalize(); }
+}
