@@ -24,19 +24,32 @@ public class Raytracer extends Application {
 
         javafx.scene.Scene fxScene = new javafx.scene.Scene(root, WIDTH, HEIGHT, Color.BLACK);
 
-        primaryStage.setTitle("Raytracer v0.1");
+        primaryStage.setTitle("Raytracer v0.2");
         primaryStage.setScene(fxScene);
         primaryStage.setResizable(false);
         primaryStage.show();
     }
 
     private Scene buildScene() {
-        Camera camera = new Camera(new Vector3D(0, 0, 0), 60.0, WIDTH, HEIGHT);
+        Camera camera = new Camera(
+            new Vector3D(0, 0, 0),
+            60.0,
+            WIDTH, HEIGHT,
+            0.5,
+            50.0
+        );
+
         Scene scene = new Scene(camera, Color.WHITE);
 
         scene.addObject(new Sphere(new Vector3D(-0.5, 0.3, 5.0), 0.5, Color.RED));
-
         scene.addObject(new Sphere(new Vector3D( 0.6, 0.3, 6.0), 0.3, Color.BLUE));
+
+        scene.addObject(new Triangle(
+            new Vector3D( 0.0,  0.6, 4.0),
+            new Vector3D(-0.6, -0.4, 4.0),
+            new Vector3D( 0.6, -0.4, 4.0),
+            Color.GREEN
+        ));
 
         return scene;
     }
@@ -60,11 +73,20 @@ public class Raytracer extends Application {
     }
 
     private Color trace(Ray ray, Scene scene) {
+        Camera cam = scene.getCamera();
+        double near = cam.getNear();
+        double far  = cam.getFar();
+
         Intersection closest = new Intersection();
 
         for (Object3D obj : scene.getObjects()) {
             Intersection hit = obj.intersect(ray);
-            if (hit.isHit() && hit.getT() < closest.getT()) {
+
+            // CLIPPING: discard hits outside [near, far]
+            if (!hit.isHit()) continue;
+            if (hit.getT() < near || hit.getT() > far) continue;
+
+            if (hit.getT() < closest.getT()) {
                 closest = hit;
             }
         }

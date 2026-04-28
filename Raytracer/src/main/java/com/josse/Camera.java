@@ -4,21 +4,33 @@ public class Camera {
 
     private Vector3D position;
     private double fov;
-    private int width; 
+    private int width;
     private int height;
+
+    private double near;
+    private double far;
 
     public Camera() {
         this.position = new Vector3D(0, 0, 0);
         this.fov = 60.0;
         this.width = 400;
         this.height = 400;
+        this.near = 0.1;
+        this.far = 1000.0;
     }
 
     public Camera(Vector3D position, double fov, int width, int height) {
+        this(position, fov, width, height, 0.1, 1000.0);
+    }
+
+    public Camera(Vector3D position, double fov, int width, int height,
+                  double near, double far) {
         this.position = position;
         this.fov = fov;
         this.width = width;
         this.height = height;
+        this.near = near;
+        this.far = far;
     }
 
     public Ray generateRay(int x, int y) {
@@ -35,9 +47,13 @@ public class Camera {
     public double getFov() { return fov; }
     public int getWidth() { return width; }
     public int getHeight() { return height; }
+    public double getNear() { return near; }   // NEW
+    public double getFar() { return far; }     // NEW
 
     public void setPosition(Vector3D position) { this.position = position; }
     public void setFov(double fov) { this.fov = fov; }
     public void setWidth(int width) { this.width = width; }
     public void setHeight(int height) { this.height = height; }
+    public void setNear(double near) { this.near = near; } // NEW
+    public void setFar(double far) { this.far = far; }     // NEW
 }
