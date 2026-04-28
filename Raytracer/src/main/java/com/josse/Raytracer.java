@@ -82,7 +82,6 @@ public class Raytracer extends Application {
         for (Object3D obj : scene.getObjects()) {
             Intersection hit = obj.intersect(ray);
 
-            // CLIPPING: discard hits outside [near, far]
             if (!hit.isHit()) continue;
             if (hit.getT() < near || hit.getT() > far) continue;
 
