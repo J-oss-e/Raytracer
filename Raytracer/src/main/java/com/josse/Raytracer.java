@@ -1,5 +1,7 @@
 package com.josse;
 
+import java.util.List;
+
 import javafx.application.Application;
 import javafx.scene.Group;
 import javafx.scene.image.ImageView;
@@ -7,6 +9,7 @@ import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+
 
 public class Raytracer extends Application {
 
@@ -31,13 +34,7 @@ public class Raytracer extends Application {
     }
 
     private Scene buildScene() {
-        Camera camera = new Camera(
-            new Vector3D(0, 0, 0),
-            60.0,
-            WIDTH, HEIGHT,
-            0.5,
-            50.0
-        );
+        Camera camera = new Camera(new Vector3D(0, 0, 0), 60.0, WIDTH, HEIGHT, 0.5, 50.0);
 
         Scene scene = new Scene(camera, Color.WHITE);
 
@@ -51,6 +48,10 @@ public class Raytracer extends Application {
             Color.GREEN
         ));
 
+        List<Triangle> mesh = ObjReader.loadTriangles("C:\\Users\\Angel\\Documents\\Up ISGC\\4to Semestre\\Raytracer\\Raytracer\\Resources\\escandalosos.obj", Color.ORANGE);
+        for (Triangle t : mesh) {
+            scene.addObject(t);
+        }
         return scene;
     }
 
