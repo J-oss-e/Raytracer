@@ -10,11 +10,8 @@ import javafx.scene.paint.Color;
 
 public class ObjReader {
         public static List<Triangle> loadTriangles(String path, Color color) {
-            // 1. crear lista de vértices (List<Vector3D>)
             List<Vector3D> vertices = new ArrayList<>();
-            // 2. crear lista de triángulos (List<Triangle>)
             List<Triangle> triangles = new ArrayList<>();
-            // 3. abrir el archivo y leer línea por línea
             try (BufferedReader br = new BufferedReader(new FileReader(path))) {
                 String linea;
                 while ((linea = br.readLine()) != null) {
