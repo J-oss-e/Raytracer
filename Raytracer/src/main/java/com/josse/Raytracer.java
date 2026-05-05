@@ -33,7 +33,7 @@ public class Raytracer extends Application {
     }
 
     private Scene buildScene() {
-        Camera camera = new Camera(new Vector3D(0, 0, 0), 60.0, WIDTH, HEIGHT, 0.5, 50.0);
+        Camera camera = new Camera(new Vector3D(2, 8, 20), 60.0, WIDTH, HEIGHT, 0.5, 45.0);
 
         Scene scene = new Scene(camera, Color.BLACK);
 
@@ -44,7 +44,7 @@ public class Raytracer extends Application {
 
         // Luz direccional
         scene.addLight(new Light(
-            new Vector3D(0.0, -0.3, 1.0),
+            new Vector3D(0.0, 0.0, -1.0),
             Color.WHITE,
             1.0
         ));

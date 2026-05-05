@@ -60,7 +60,7 @@ public class Triangle extends Object3D {
     public Vector3D getNormal(Vector3D hitPoint) {
         // V = v1 - v0,  W = v0 - v2,  Normal = Normalize(V x W)
         Vector3D V = v1.subtract(v0);
-        Vector3D W = v0.subtract(v2);
+        Vector3D W = v2.subtract(v0);
         return V.cross(W).normalize();
     }
 

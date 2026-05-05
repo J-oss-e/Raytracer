@@ -39,7 +39,7 @@ public class Camera {
         double px = (2.0 * ((x + 0.5) / width) - 1.0) * aspect * scale;
         double py = (1.0 - 2.0 * ((y + 0.5) / height)) * scale;
 
-        Vector3D dir = new Vector3D(px, py, 1.0).normalize();
+        Vector3D dir = new Vector3D(px, py, -1.0).normalize();
         return new Ray(position, dir);
     }
 
