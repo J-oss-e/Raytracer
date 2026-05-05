@@ -19,6 +19,8 @@ public abstract class Object3D {
 
     public abstract Intersection intersect(Ray ray);
 
+    public abstract Vector3D getNormal(Vector3D hitPoint);
+
     public Vector3D getPosition() { return position; }
     public Color getColor() { return color; }
 

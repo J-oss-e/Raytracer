@@ -36,33 +36,32 @@ public class Triangle extends Object3D {
         Vector3D P = D.cross(v1v0);
 
         double det = v2v0.dot(P);
-        if (det > -EPSILON && det < EPSILON) {
-            return new Intersection();
-        }
-        double invDet = 1.0 / det;
+        if (det > -EPSILON && det < EPSILON) return new Intersection();
 
+        double invDet = 1.0 / det;
         Vector3D T = O.subtract(v0);
 
         double u = invDet * T.dot(P);
-        if (u < 0.0 || u > 1.0) {
-            return new Intersection();
-        }
+        if (u < 0.0 || u > 1.0) return new Intersection();
 
         Vector3D Q = T.cross(v2v0);
 
         double v = invDet * D.dot(Q);
-        if (v < 0.0 || (u + v) > 1.0 + EPSILON) {
-            return new Intersection();
-        }
+        if (v < 0.0 || (u + v) > 1.0 + EPSILON) return new Intersection();
 
         double t = invDet * Q.dot(v1v0);
-
-        if (t < EPSILON) {
-            return new Intersection();
-        }
+        if (t < EPSILON) return new Intersection();
 
         Vector3D hitPoint = ray.pointAt(t);
         return new Intersection(true, t, hitPoint, this);
+    }
+
+    @Override
+    public Vector3D getNormal(Vector3D hitPoint) {
+        // V = v1 - v0,  W = v0 - v2,  Normal = Normalize(V x W)
+        Vector3D V = v1.subtract(v0);
+        Vector3D W = v0.subtract(v2);
+        return V.cross(W).normalize();
     }
 
     public Vector3D getV0() { return v0; }

@@ -10,7 +10,6 @@ import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
-
 public class Raytracer extends Application {
 
     private static final int WIDTH = 1200;
@@ -27,7 +26,7 @@ public class Raytracer extends Application {
 
         javafx.scene.Scene fxScene = new javafx.scene.Scene(root, WIDTH, HEIGHT, Color.BLACK);
 
-        primaryStage.setTitle("Raytracer v0.2");
+        primaryStage.setTitle("Raytracer v0.4");
         primaryStage.setScene(fxScene);
         primaryStage.setResizable(false);
         primaryStage.show();
@@ -36,22 +35,20 @@ public class Raytracer extends Application {
     private Scene buildScene() {
         Camera camera = new Camera(new Vector3D(0, 0, 0), 60.0, WIDTH, HEIGHT, 0.5, 50.0);
 
-        Scene scene = new Scene(camera, Color.WHITE);
+        Scene scene = new Scene(camera, Color.BLACK);
 
-        scene.addObject(new Sphere(new Vector3D(-0.5, 0.3, 5.0), 0.5, Color.RED));
-        scene.addObject(new Sphere(new Vector3D( 0.6, 0.3, 6.0), 0.3, Color.BLUE));
-
-        scene.addObject(new Triangle(
-            new Vector3D( 0.0,  0.6, 4.0),
-            new Vector3D(-0.6, -0.4, 4.0),
-            new Vector3D( 0.6, -0.4, 4.0),
-            Color.GREEN
-        ));
-
-        List<Triangle> mesh = ObjReader.loadTriangles("C:\\Users\\Angel\\Documents\\Up ISGC\\4to Semestre\\Raytracer\\Raytracer\\Resources\\escandalosos.obj", Color.ORANGE);
+        List<Triangle> mesh = ObjReader.loadTriangles("C:\\Users\\Angel\\Documents\\Up ISGC\\4to Semestre\\Raytracer\\Raytracer\\Resources\\Lowpoly_tree_sample.obj", Color.ORANGE);
         for (Triangle t : mesh) {
             scene.addObject(t);
         }
+
+        // Luz direccional
+        scene.addLight(new Light(
+            new Vector3D(0.0, -0.3, 1.0),
+            Color.WHITE,
+            1.0
+        ));
+
         return scene;
     }
 
@@ -91,13 +88,37 @@ public class Raytracer extends Application {
             }
         }
 
-        if (closest.isHit()) {
-            return closest.getObject().getColor();
+        if (!closest.isHit()) {
+            return scene.getBackgroundColor();
         }
-        return scene.getBackgroundColor();
+
+        Object3D obj = closest.getObject();
+        Vector3D hitPoint = closest.getPoint();
+        Vector3D N = obj.getNormal(hitPoint);
+
+        Color objectColor = obj.getColor();
+        double r = 0, g = 0, b = 0;
+
+        for (Light light : scene.getLights()) {
+            Vector3D L = light.getDirection().scale(-1).normalize();
+            double NdotL = Math.max(0.0, N.dot(L));
+
+            double li = light.getIntensity();
+            Color lc = light.getColor();
+
+            r += lc.getRed()   * objectColor.getRed()   * li * NdotL;
+            g += lc.getGreen() * objectColor.getGreen() * li * NdotL;
+            b += lc.getBlue()  * objectColor.getBlue()  * li * NdotL;
+        }
+
+        r = Math.min(1.0, r);
+        g = Math.min(1.0, g);
+        b = Math.min(1.0, b);
+
+        return new Color(r, g, b, 1.0);
     }
 
     public static void main(String[] args) {
         launch(args);
     }
-}
+}   

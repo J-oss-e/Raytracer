@@ -21,30 +21,28 @@ public class Sphere extends Object3D {
         Vector3D L = this.position.subtract(ray.getOrigin());
 
         double tca = L.dot(ray.getDirection());
-        if (tca < 0) {
-            return new Intersection();
-        }
+        if (tca < 0) return new Intersection();
 
         double d2 = L.dot(L) - tca * tca;
         double radius2 = radius * radius;
-        if (d2 > radius2) {
-            return new Intersection();
-        }
+        if (d2 > radius2) return new Intersection();
 
         double thc = Math.sqrt(radius2 - d2);
-
         double t0 = tca - thc;
         double t1 = tca + thc;
 
         if (t0 < 0) {
             t0 = t1;
-            if (t0 < 0) {
-                return new Intersection();
-            }
+            if (t0 < 0) return new Intersection();
         }
 
         Vector3D hitPoint = ray.pointAt(t0);
         return new Intersection(true, t0, hitPoint, this);
+    }
+
+    @Override
+    public Vector3D getNormal(Vector3D hitPoint) {
+        return hitPoint.subtract(this.position).normalize();
     }
 
     public double getRadius() { return radius; }
