@@ -95,6 +95,7 @@ public class Raytracer extends Application {
         Object3D obj = closest.getObject();
         Vector3D hitPoint = closest.getPoint();
         Vector3D N = obj.getNormal(hitPoint);
+        if (N.dot(ray.getDirection()) > 0) N = N.scale(-1);
 
         Color objectColor = obj.getColor();
         double r = 0, g = 0, b = 0;
