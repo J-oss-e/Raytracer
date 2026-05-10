@@ -1,4 +1,6 @@
-package com.josse;
+package com.josse.objects;
+
+import com.josse.tools.Vector3D;
 
 import javafx.scene.paint.Color;
 
@@ -16,10 +18,6 @@ public abstract class Object3D {
         this.position = position;
         this.color = color;
     }
-
-    public abstract Intersection intersect(Ray ray);
-
-    public abstract Vector3D getNormal(Vector3D hitPoint);
 
     public Vector3D getPosition() { return position; }
     public Color getColor() { return color; }

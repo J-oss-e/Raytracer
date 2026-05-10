@@ -1,4 +1,4 @@
-package com.josse;
+package com.josse.tools;
 
 public class Ray {
 

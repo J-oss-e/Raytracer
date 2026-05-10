@@ -2,6 +2,15 @@ package com.josse;
 
 import java.util.List;
 
+import com.josse.lights.Light;
+import com.josse.objects.Camera;
+import com.josse.objects.Object3D;
+import com.josse.objects.Triangle;
+import com.josse.tools.Intersection;
+import com.josse.tools.ObjReader;
+import com.josse.tools.Ray;
+import com.josse.tools.Vector3D;
+
 import javafx.application.Application;
 import javafx.scene.Group;
 import javafx.scene.image.ImageView;
@@ -78,7 +87,7 @@ public class Raytracer extends Application {
         Intersection closest = new Intersection();
 
         for (Object3D obj : scene.getObjects()) {
-            Intersection hit = obj.intersect(ray);
+            Intersection hit = obj.getIntersection(ray);
 
             if (!hit.isHit()) continue;
             if (hit.getT() < near || hit.getT() > far) continue;

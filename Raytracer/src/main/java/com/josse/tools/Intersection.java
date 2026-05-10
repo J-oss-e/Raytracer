@@ -1,4 +1,6 @@
-package com.josse;
+package com.josse.tools;
+
+import com.josse.objects.Object3D;
 
 public class Intersection {
 

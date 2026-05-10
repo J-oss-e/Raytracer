@@ -1,4 +1,7 @@
-package com.josse;
+package com.josse.objects;
+
+import com.josse.tools.Ray;
+import com.josse.tools.Vector3D;
 
 public class Camera {
 

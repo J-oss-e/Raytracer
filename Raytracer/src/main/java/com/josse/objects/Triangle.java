@@ -1,8 +1,13 @@
-package com.josse;
+package com.josse.objects;
+
+import com.josse.tools.IIntersectable;
+import com.josse.tools.Intersection;
+import com.josse.tools.Ray;
+import com.josse.tools.Vector3D;
 
 import javafx.scene.paint.Color;
 
-public class Triangle extends Object3D {
+public class Triangle extends Object3D implements IIntersectable {
 
     private static final double EPSILON = 1e-8;
 
@@ -26,7 +31,7 @@ public class Triangle extends Object3D {
     }
 
     @Override
-    public Intersection intersect(Ray ray) {
+    public Intersection getIntersection(Ray ray) {
         Vector3D O = ray.getOrigin();
         Vector3D D = ray.getDirection();
 
@@ -56,7 +61,6 @@ public class Triangle extends Object3D {
         return new Intersection(true, t, hitPoint, this);
     }
 
-    @Override
     public Vector3D getNormal(Vector3D hitPoint) {
         // V = v1 - v0,  W = v0 - v2,  Normal = Normalize(V x W)
         Vector3D V = v1.subtract(v0);

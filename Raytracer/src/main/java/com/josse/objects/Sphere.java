@@ -1,8 +1,13 @@
-package com.josse;
+package com.josse.objects;
+
+import com.josse.tools.IIntersectable;
+import com.josse.tools.Intersection;
+import com.josse.tools.Ray;
+import com.josse.tools.Vector3D;
 
 import javafx.scene.paint.Color;
 
-public class Sphere extends Object3D {
+public class Sphere extends Object3D implements IIntersectable {
 
     private double radius;
 
@@ -17,7 +22,7 @@ public class Sphere extends Object3D {
     }
 
     @Override
-    public Intersection intersect(Ray ray) {
+    public Intersection getIntersection(Ray ray) {
         Vector3D L = this.position.subtract(ray.getOrigin());
 
         double tca = L.dot(ray.getDirection());
@@ -40,7 +45,6 @@ public class Sphere extends Object3D {
         return new Intersection(true, t0, hitPoint, this);
     }
 
-    @Override
     public Vector3D getNormal(Vector3D hitPoint) {
         return hitPoint.subtract(this.position).normalize();
     }

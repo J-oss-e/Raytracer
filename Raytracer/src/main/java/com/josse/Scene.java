@@ -3,11 +3,16 @@ package com.josse;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.josse.lights.Light;
+import com.josse.objects.Camera;
+import com.josse.objects.Object3D;
+import com.josse.tools.IIntersectable;
+
 import javafx.scene.paint.Color;
 
 public class Scene {
 
-    private List<Object3D> objects;
+    private List<IIntersectable> objects;
     private List<Light> lights;
     private Color backgroundColor;
     private Camera camera;

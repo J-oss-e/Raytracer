@@ -1,4 +1,6 @@
-package com.josse;
+package com.josse.lights;
+
+import com.josse.tools.Vector3D;
 
 import javafx.scene.paint.Color;
 

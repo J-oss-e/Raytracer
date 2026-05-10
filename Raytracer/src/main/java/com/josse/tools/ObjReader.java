@@ -1,10 +1,12 @@
-package com.josse;
+package com.josse.tools;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException; // Si vas a leer archivos
 import java.util.ArrayList; // Para manejar errores de lectura
 import java.util.List;
+
+import com.josse.objects.Triangle;
 
 import javafx.scene.paint.Color;
 
