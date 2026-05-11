@@ -5,7 +5,6 @@ import java.util.List;
 
 import com.josse.lights.Light;
 import com.josse.objects.Camera;
-import com.josse.objects.Object3D;
 import com.josse.tools.IIntersectable;
 
 import javafx.scene.paint.Color;
@@ -31,7 +30,7 @@ public class Scene {
         this.backgroundColor = backgroundColor;
     }
 
-    public void addObject(Object3D object) {
+    public void addObject(IIntersectable object) {
         this.objects.add(object);
     }
 
@@ -39,7 +38,7 @@ public class Scene {
         this.lights.add(light);
     }
 
-    public List<Object3D> getObjects() { return objects; }
+    public List<IIntersectable> getObjects() { return objects; }
     public List<Light> getLights() { return lights; }
     public Color getBackgroundColor() { return backgroundColor; }
     public Camera getCamera() { return camera; }

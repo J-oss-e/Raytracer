@@ -8,28 +8,33 @@ public class Intersection {
     private double t;
     private Vector3D point;
     private Object3D object;
+    private Vector3D normal;
 
     public Intersection() {
         this.hit = false;
         this.t = Double.POSITIVE_INFINITY;
         this.point = null;
         this.object = null;
+        this.normal = null;
     }
 
-    public Intersection(boolean hit, double t, Vector3D point, Object3D object) {
+    public Intersection(boolean hit, double t, Vector3D point, Object3D object, Vector3D normal) {
         this.hit = hit;
         this.t = t;
         this.point = point;
         this.object = object;
+        this.normal = normal;
     }
 
     public boolean isHit() { return hit; }
     public double getT() { return t; }
     public Vector3D getPoint() { return point; }
     public Object3D getObject() { return object; }
+    public Vector3D getNormal() { return normal; }
 
     public void setHit(boolean hit) { this.hit = hit; }
     public void setT(double t) { this.t = t; }
     public void setPoint(Vector3D point) { this.point = point; }
     public void setObject(Object3D object) { this.object = object; }
+    public void setNormal(Vector3D normal) { this.normal = normal; }
 }

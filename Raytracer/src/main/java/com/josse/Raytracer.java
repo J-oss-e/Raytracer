@@ -10,6 +10,7 @@ import com.josse.tools.Intersection;
 import com.josse.tools.ObjReader;
 import com.josse.tools.Ray;
 import com.josse.tools.Vector3D;
+import com.josse.tools.IIntersectable;
 
 import javafx.application.Application;
 import javafx.scene.Group;
@@ -86,7 +87,7 @@ public class Raytracer extends Application {
 
         Intersection closest = new Intersection();
 
-        for (Object3D obj : scene.getObjects()) {
+        for (IIntersectable obj : scene.getObjects()) {
             Intersection hit = obj.getIntersection(ray);
 
             if (!hit.isHit()) continue;
@@ -102,8 +103,7 @@ public class Raytracer extends Application {
         }
 
         Object3D obj = closest.getObject();
-        Vector3D hitPoint = closest.getPoint();
-        Vector3D N = obj.getNormal(hitPoint);
+        Vector3D N = closest.getNormal();
         if (N.dot(ray.getDirection()) > 0) N = N.scale(-1);
 
         Color objectColor = obj.getColor();

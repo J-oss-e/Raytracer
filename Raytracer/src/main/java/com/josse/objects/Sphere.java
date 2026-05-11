@@ -42,11 +42,8 @@ public class Sphere extends Object3D implements IIntersectable {
         }
 
         Vector3D hitPoint = ray.pointAt(t0);
-        return new Intersection(true, t0, hitPoint, this);
-    }
-
-    public Vector3D getNormal(Vector3D hitPoint) {
-        return hitPoint.subtract(this.position).normalize();
+        Vector3D normal = hitPoint.subtract(this.position).normalize();
+        return new Intersection(true, t0, hitPoint, this, normal);
     }
 
     public double getRadius() { return radius; }
