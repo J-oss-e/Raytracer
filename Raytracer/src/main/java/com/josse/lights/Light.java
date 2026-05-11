@@ -1,23 +1,19 @@
 package com.josse.lights;
 
-import com.josse.tools.Vector3D;
+import com.josse.tools.Intersection;
 
 import javafx.scene.paint.Color;
 
-public class Light {
+public abstract class Light {
 
-    private Vector3D direction;
     private Color color;
     private double intensity;
 
-    public Light(Vector3D direction, Color color, double intensity) {
-        this.direction = direction.normalize();
+    public abstract double getNDotL(Intersection intersection);
+
+    public Light(Color color, double intensity) {
         this.color = color;
         this.intensity = intensity;
-    }
-
-    public Vector3D getDirection() {
-        return direction;
     }
 
     public Color getColor() {
@@ -26,10 +22,6 @@ public class Light {
 
     public double getIntensity() {
         return intensity;
-    }
-
-    public void setDirection(Vector3D direction) {
-        this.direction = direction.normalize();
     }
 
     public void setColor(Color color) {

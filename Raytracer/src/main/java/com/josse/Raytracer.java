@@ -2,6 +2,7 @@ package com.josse;
 
 import java.util.List;
 
+import com.josse.lights.DirectionalLight;
 import com.josse.lights.Light;
 import com.josse.objects.Camera;
 import com.josse.objects.Object3D;
@@ -51,8 +52,7 @@ public class Raytracer extends Application {
             scene.addObject(t);
         }
 
-        // Luz direccional
-        scene.addLight(new Light(
+        scene.addLight(new DirectionalLight(    
             new Vector3D(0.0, 0.0, -1.0),
             Color.WHITE,
             1.0
@@ -121,8 +121,7 @@ public class Raytracer extends Application {
     
         // For each light in the scene, calculate the contribution to the color based on the light's intensity, color, and direction
         for (Light light : scene.getLights()) {
-            Vector3D firstLight = light.getDirection().scale(-1).normalize();
-            double NdotL = Math.max(0.0, normal.dot(firstLight));
+            double NdotL = light.getNDotL(closest);
 
             // If the surface is perpendicular to the light, skip to the next light
             if (NdotL <= 0) continue;
