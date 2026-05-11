@@ -257,3 +257,12 @@
     ▎ Every intersectable object in the scene has a color — Option B's flexibility
       has no payoff until a full Material system exists. Option A is simpler and correct for now.
 
+  Step 4 complete — Light made abstract:
+    - Light.java is now abstract with only color, intensity, and abstract getNDotL(Intersection).
+    - direction field moved out of Light and into DirectionalLight where it belongs.
+    - Light constructor simplified to (Color, double intensity).
+    - DirectionalLight: owns direction, normalizes at construction, implements getNDotL().
+    - PointLight: owns position, computes direction per hit point in getNDotL().
+    - shade() needed zero changes to support the new PointLight — Open/Closed Principle working.
+    - Both lights added to buildScene() for visual testing.
+

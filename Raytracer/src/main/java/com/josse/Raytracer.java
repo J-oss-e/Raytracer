@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.josse.lights.DirectionalLight;
 import com.josse.lights.Light;
+import com.josse.lights.PointLight;
 import com.josse.objects.Camera;
 import com.josse.objects.Object3D;
 import com.josse.objects.Triangle;
@@ -52,11 +53,8 @@ public class Raytracer extends Application {
             scene.addObject(t);
         }
 
-        scene.addLight(new DirectionalLight(    
-            new Vector3D(0.0, 0.0, -1.0),
-            Color.WHITE,
-            1.0
-        ));
+        scene.addLight(new DirectionalLight(new Vector3D(0.0, 0.0, -1.0), Color.WHITE, 1.0));
+        scene.addLight(new PointLight(new Vector3D(0.0, 0.0, 0.0), Color.WHITE, 0.5));
 
         return scene;
     }
