@@ -6,7 +6,6 @@ import com.josse.lights.Light;
 import com.josse.objects.Camera;
 import com.josse.objects.Object3D;
 import com.josse.objects.Triangle;
-import com.josse.tools.IIntersectable;
 import com.josse.tools.Intersection;
 import com.josse.tools.ObjReader;
 import com.josse.tools.Ray;
@@ -90,7 +89,7 @@ public class Raytracer extends Application {
         Intersection closest = new Intersection();
 
         //Main iteration to find the closest intersection of the ray with the objects in the scene
-        for (IIntersectable obj : scene.getObjects()) {
+        for (Object3D obj : scene.getObjects()) {
             Intersection hit = obj.getIntersection(ray);
 
             //If it doesn't hit, or if it's outside the near and far planes, skip to the next object

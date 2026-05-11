@@ -246,3 +246,14 @@
     ▎ trace() kept as coordinator — future shadow/reflection rays will re-enter through trace(),
       not by calling findClosest() and shade() separately.
 
+  Step 3 complete — Object3D vs IIntersectable resolved:
+    - Object3D is now the single root. getIntersection(Ray) declared abstract there.
+    - Sphere and Triangle drop implements IIntersectable — extends Object3D was already there.
+    - Scene.objects changed from List<IIntersectable> to List<Object3D>.
+    - Raytracer.findClosest() loop changed from IIntersectable to Object3D.
+    - IIntersectable.java deleted — dead code removed.
+
+  Key decision: chose Option A (Object3D as root) over Option B (IIntersectable as root).
+    ▎ Every intersectable object in the scene has a color — Option B's flexibility
+      has no payoff until a full Material system exists. Option A is simpler and correct for now.
+

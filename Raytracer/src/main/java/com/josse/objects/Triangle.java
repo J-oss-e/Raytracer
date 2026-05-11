@@ -1,13 +1,12 @@
 package com.josse.objects;
 
-import com.josse.tools.IIntersectable;
 import com.josse.tools.Intersection;
 import com.josse.tools.Ray;
 import com.josse.tools.Vector3D;
 
 import javafx.scene.paint.Color;
 
-public class Triangle extends Object3D implements IIntersectable {
+public class Triangle extends Object3D{
 
     private static final double EPSILON = 1e-8;
 

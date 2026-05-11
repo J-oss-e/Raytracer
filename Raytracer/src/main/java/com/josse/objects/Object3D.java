@@ -1,5 +1,7 @@
 package com.josse.objects;
 
+import com.josse.tools.Intersection;
+import com.josse.tools.Ray;
 import com.josse.tools.Vector3D;
 
 import javafx.scene.paint.Color;
@@ -8,6 +10,8 @@ public abstract class Object3D {
 
     protected Vector3D position;
     protected Color color;
+
+    public abstract Intersection getIntersection(Ray ray);
 
     public Object3D() {
         this.position = new Vector3D(0, 0, 0);
