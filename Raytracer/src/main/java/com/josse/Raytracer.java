@@ -6,11 +6,11 @@ import com.josse.lights.Light;
 import com.josse.objects.Camera;
 import com.josse.objects.Object3D;
 import com.josse.objects.Triangle;
+import com.josse.tools.IIntersectable;
 import com.josse.tools.Intersection;
 import com.josse.tools.ObjReader;
 import com.josse.tools.Ray;
 import com.josse.tools.Vector3D;
-import com.josse.tools.IIntersectable;
 
 import javafx.application.Application;
 import javafx.scene.Group;
@@ -73,23 +73,27 @@ public class Raytracer extends Application {
         for (int y = 0; y < h; y++) {
             for (int x = 0; x < w; x++) {
                 Ray ray = camera.generateRay(x, y);
-                Color color = trace(ray, scene);
+                Color color = trace(ray, scene, camera.getNear(), camera.getFar());
                 pw.setColor(x, y, color);
             }
         }
         return image;
     }
 
-    private Color trace(Ray ray, Scene scene) {
-        Camera cam = scene.getCamera();
-        double near = cam.getNear();
-        double far  = cam.getFar();
+    private Color trace(Ray ray, Scene scene, double near, double far) {
+        Intersection closest = findClosest(ray, scene, near, far);
+        return shade(closest, scene, ray);
+    }
 
+    private Intersection findClosest(Ray ray, Scene scene, double near, double far) {
+        //Declare the closest intersection to see if it hits or not
         Intersection closest = new Intersection();
 
+        //Main iteration to find the closest intersection of the ray with the objects in the scene
         for (IIntersectable obj : scene.getObjects()) {
             Intersection hit = obj.getIntersection(ray);
 
+            //If it doesn't hit, or if it's outside the near and far planes, skip to the next object
             if (!hit.isHit()) continue;
             if (hit.getT() < near || hit.getT() > far) continue;
 
@@ -98,21 +102,31 @@ public class Raytracer extends Application {
             }
         }
 
+        return closest;
+    }
+
+    private Color shade(Intersection closest, Scene scene, Ray ray){
+        //If it doesn't hit anything, return the background color
         if (!closest.isHit()) {
             return scene.getBackgroundColor();
         }
 
-        Object3D obj = closest.getObject();
-        Vector3D N = closest.getNormal();
-        if (N.dot(ray.getDirection()) > 0) N = N.scale(-1);
+        //If it does hit, calculate the color based on the lights and the material properties of the object
+        Object3D object = closest.getObject();
+        Vector3D normal = closest.getNormal();
+        // If the normal is facing the ray, flip it
+        if (normal.dot(ray.getDirection()) > 0) normal = normal.scale(-1);
 
-        Color objectColor = obj.getColor();
+        Color objectColor = object.getColor();
         double r = 0, g = 0, b = 0;
-
+    
+        // For each light in the scene, calculate the contribution to the color based on the light's intensity, color, and direction
         for (Light light : scene.getLights()) {
-            Vector3D L = light.getDirection().scale(-1).normalize();
-            double NdotL = Math.max(0.0, N.dot(L));
+            Vector3D firstLight = light.getDirection().scale(-1).normalize();
+            double NdotL = Math.max(0.0, normal.dot(firstLight));
 
+            // If the surface is perpendicular to the light, skip to the next light
+            if (NdotL <= 0) continue;
             double li = light.getIntensity();
             Color lc = light.getColor();
 
@@ -121,6 +135,7 @@ public class Raytracer extends Application {
             b += lc.getBlue()  * objectColor.getBlue()  * li * NdotL;
         }
 
+        // Clamp the color values to the range [0, 1]
         r = Math.min(1.0, r);
         g = Math.min(1.0, g);
         b = Math.min(1.0, b);

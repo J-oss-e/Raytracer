@@ -228,4 +228,21 @@
     ▎ Found a half-finished refactor: Raytracer.java line 105 had been changed to IIntersectable obj but IIntersectable has no getColor(). Rolled back to Object3D obj to keep Step 1 clean.
     ▎ The full Object3D vs IIntersectable decision is deferred to Step 3.
 
+  2nd Session:
+  Step 2 complete — trace() split into three methods:
+    - findClosest(Ray, Scene, double near, double far) → Intersection
+        Owns the intersection loop. No camera dependency — near/far passed as parameters.
+    - shade(Intersection, Scene, Ray) → Color
+        Owns the no-hit check (returns background color), normal flip, Lambert loop, and clamping.
+    - trace(Ray, Scene, double near, double far) → Color
+        Two-line coordinator. Calls findClosest() then shade(). Entry point for all ray types
+        (primary, shadow, reflection) — keeps render() clean.
+    - render() extracts near/far from camera once and passes them down the chain.
+
+  Key decisions made:
+    ▎ near/far moved out of findClosest() — render() owns camera knowledge, passes values down.
+    ▎ No-hit check (background color) lives in shade(), not findClosest() — shade() answers
+      "what color is this pixel?" and background is a valid answer.
+    ▎ trace() kept as coordinator — future shadow/reflection rays will re-enter through trace(),
+      not by calling findClosest() and shade() separately.
 
