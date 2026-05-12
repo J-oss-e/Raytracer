@@ -274,3 +274,31 @@
     - shade() needed zero changes to support the new PointLight — Open/Closed Principle working.
     - Both lights added to buildScene() for visual testing.
 
+  3rd Session — Bug fixes between Step 5 and Step 6:
+
+  Bug A — Normal flip was in the wrong layer (Issue F from architecture analysis):
+    - Original shade() flipped normal into a local variable but getNDotL(closest) read
+      intersection.getNormal() directly — the unflipped original. The fix never reached lighting.
+    - Symptom: triangles with reversed winding order rendered black even when facing the light.
+    - Fix: moved the flip into Triangle.getIntersection() and Sphere.getIntersection().
+      Each shape now checks if normal.dot(ray.getDirection()) > 0 and flips before storing
+      the normal in the Intersection. Geometry layer owns a geometric decision.
+    - shade() Ray parameter removed — no longer needed since shade() does no normal work.
+    ▎ Side effect: triangles are now effectively double-sided (back faces visible). Root cause
+      is inconsistent winding order in OBJ files — a data quality issue, not a code issue.
+      Deferred: back-face culling or winding normalization at load time.
+
+  Bug B — ObjReader silently dropped half the geometry for quad-face OBJ files:
+    - ObjReader only parsed partes[1..3] from face lines. Quad faces (f v1 v2 v3 v4)
+      had their 4th vertex ignored — one triangle of every quad was never created.
+    - Symptom: faces missing entirely (not black — just absent) on models with quad geometry.
+    - Fix: ObjReader now checks partes.length. Triangles (length == 4) create 1 triangle.
+      Quads (length == 5) are split into 2 triangles using fan triangulation:
+        Triangle 1: v1, v2, v3
+        Triangle 2: v1, v3, v4
+    - v4 scoped inside the quad branch only — no sentinel value needed.
+
+  Next: Step 6 — Camera look-at (Issue 5)
+  After that: Smooth shading pipeline (requires ObjReader vn parsing, Triangle per-vertex
+    normals, barycentric interpolation utility, Model3D normal interpolation).
+
