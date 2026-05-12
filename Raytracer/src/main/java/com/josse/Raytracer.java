@@ -1,13 +1,11 @@
 package com.josse;
 
-import java.util.List;
-
 import com.josse.lights.DirectionalLight;
 import com.josse.lights.Light;
 import com.josse.lights.PointLight;
 import com.josse.objects.Camera;
+import com.josse.objects.Model3D;
 import com.josse.objects.Object3D;
-import com.josse.objects.Triangle;
 import com.josse.tools.Intersection;
 import com.josse.tools.ObjReader;
 import com.josse.tools.Ray;
@@ -44,17 +42,15 @@ public class Raytracer extends Application {
     }
 
     private Scene buildScene() {
-        Camera camera = new Camera(new Vector3D(2, 8, 20), 60.0, WIDTH, HEIGHT, 0.5, 45.0);
+        Camera camera = new Camera(new Vector3D(0, 5, 15), 60.0, WIDTH, HEIGHT, 0.5, 100.0);
 
         Scene scene = new Scene(camera, Color.BLACK);
+        
+        Model3D model = ObjReader.loadModel("Resources/Lowpoly_tree_sample.obj", Color.GREEN, new Vector3D(0, 0, 0));
+        scene.addObject(model);
 
-        List<Triangle> mesh = ObjReader.loadTriangles("C:\\Users\\Angel\\Documents\\Up ISGC\\4to Semestre\\Raytracer\\Raytracer\\Resources\\Lowpoly_tree_sample.obj", Color.ORANGE);
-        for (Triangle t : mesh) {
-            scene.addObject(t);
-        }
-
-        scene.addLight(new DirectionalLight(new Vector3D(0.0, 0.0, -1.0), Color.WHITE, 1.0));
-        scene.addLight(new PointLight(new Vector3D(0.0, 0.0, 0.0), Color.WHITE, 0.5));
+        scene.addLight(new DirectionalLight(new Vector3D(0.0, -1.0, -1.0), Color.WHITE, 1.0));
+        scene.addLight(new PointLight(new Vector3D(0.0, 10.0, 10.0), Color.WHITE, 0.8));
 
         return scene;
     }

@@ -6,12 +6,18 @@ import java.io.IOException; // Si vas a leer archivos
 import java.util.ArrayList; // Para manejar errores de lectura
 import java.util.List;
 
+import com.josse.objects.Model3D;
 import com.josse.objects.Triangle;
 
 import javafx.scene.paint.Color;
 
 public class ObjReader {
-        public static List<Triangle> loadTriangles(String path, Color color) {
+        public static Model3D loadModel(String path, Color color, Vector3D position) {
+            List<Triangle> triangles = loadTriangles(path, color);
+            return new Model3D(triangles, color, position);
+        }
+
+        private static List<Triangle> loadTriangles(String path, Color color) {
             List<Vector3D> vertices = new ArrayList<>();
             List<Triangle> triangles = new ArrayList<>();
             try (BufferedReader br = new BufferedReader(new FileReader(path))) {

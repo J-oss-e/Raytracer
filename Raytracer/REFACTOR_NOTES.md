@@ -253,6 +253,14 @@
     - Raytracer.findClosest() loop changed from IIntersectable to Object3D.
     - IIntersectable.java deleted — dead code removed.
 
+  Step 5 complete — Model3D mesh grouping:
+    - Model3D extends Object3D, stores List<Triangle>, implements getIntersection() internally.
+    - getIntersection() loops its own triangles, finds closest hit, returns Intersection with
+      this (Model3D) as the object — not the individual triangle.
+    - ObjReader.loadModel() returns Model3D. loadTriangles() made private (implementation detail).
+    - buildScene() loop removed — one scene.addObject(model) line replaces it.
+    - Path changed from hardcoded absolute to relative: "Resources/Lowpoly_tree_sample.obj".
+
   Key decision: chose Option A (Object3D as root) over Option B (IIntersectable as root).
     ▎ Every intersectable object in the scene has a color — Option B's flexibility
       has no payoff until a full Material system exists. Option A is simpler and correct for now.
