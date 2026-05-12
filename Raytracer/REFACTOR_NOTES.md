@@ -298,7 +298,37 @@
         Triangle 2: v1, v3, v4
     - v4 scoped inside the quad branch only — no sentinel value needed.
 
-  Next: Step 6 — Camera look-at (Issue 5)
-  After that: Smooth shading pipeline (requires ObjReader vn parsing, Triangle per-vertex
-    normals, barycentric interpolation utility, Model3D normal interpolation).
+  4th Session — Smooth shading pipeline (partial):
+
+  Reference architecture (professor's repo) analyzed and compared. Key takeaways:
+    ▎ Reference's Light extends Object3D is an LSP violation — our design is correct.
+    ▎ Reference's Triangle.getIntersection() doesn't store the normal (Issue 2 we already fixed).
+    ▎ Reference uses a separate Barycentric utility class — we avoided this by reusing u/v
+      values already computed inside Möller-Trumbore. Responsibility stays inside Triangle.
+    ▎ Reference shows smooth shading, vn parsing, smoothing groups, and PNG output as targets.
+
+  Triangle — per-vertex normals added:
+    - Two new fields: n0, n1, n2 (Vector3D, nullable).
+    - Constructor without normals: sets n0/n1/n2 = null (flat shading fallback).
+    - Constructor with normals: Triangle(v0,v1,v2,n0,n1,n2,color).
+    - getIntersection() now branches on n0 != null:
+        If vertex normals present: w = 1-u-v, smoothNormal = n0*w + n1*u + n2*v, normalized.
+        If not: existing flat face normal (edge1 × edge2) used as before.
+    - Normal flip applied to smooth normal too — consistent with flat normal behavior.
+    - u, v barycentric weights come directly from Möller-Trumbore — no utility class needed.
+
+  ObjReader — vn parsing added:
+    - normals list added alongside vertices list.
+    - vn lines parsed into normals list (same pattern as v lines).
+    - f line parsing now checks partes[1].split("/").length >= 3 to detect normal indices.
+    - if normals present: extracts n1/n2/n3 (and n4 for quads), uses smooth constructor.
+    - else: uses flat constructor — safe for OBJ files with no vn data.
+    - Both triangle and quad cases handled in both branches.
+    ▎ Guard prevents ArrayIndexOutOfBoundsException on faces without normal indices.
+
+  Pending visual verification:
+    - Tested with teapot.obj but camera too far to confirm smooth shading visually.
+    - Need to move camera closer OR implement Step 6 (look-at) first for proper framing.
+
+  Next: Verify smooth shading visually, then Step 6 — Camera look-at (Issue 5).
 

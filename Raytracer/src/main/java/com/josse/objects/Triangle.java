@@ -13,12 +13,28 @@ public class Triangle extends Object3D{
     private Vector3D v0;
     private Vector3D v1;
     private Vector3D v2;
+    private Vector3D n0;
+    private Vector3D n1;
+    private Vector3D n2;
 
     public Triangle(Vector3D v0, Vector3D v1, Vector3D v2, Color color) {
         super(centroid(v0, v1, v2), color);
         this.v0 = v0;
         this.v1 = v1;
         this.v2 = v2;
+        this.n0 = null;
+        this.n1 = null;
+        this.n2 = null;
+    }
+
+    public Triangle(Vector3D v0, Vector3D v1, Vector3D v2, Vector3D n0, Vector3D n1, Vector3D n2, Color color) {
+        super(centroid(v0, v1, v2), color);
+        this.v0 = v0;
+        this.v1 = v1;
+        this.v2 = v2;
+        this.n0 = n0;
+        this.n1 = n1;
+        this.n2 = n2;
     }
 
     private static Vector3D centroid(Vector3D a, Vector3D b, Vector3D c) {
@@ -61,11 +77,19 @@ public class Triangle extends Object3D{
         double t = invDet * originCrossEdge2.dot(edge1);
         if (t < EPSILON) return new Intersection();
         //Is the intersection point behind the ray origin? If so, no hit occurs.
+
+        Vector3D hitPoint = ray.pointAt(t);
+        if(n0 != null) {
+            double w = 1 - u - v;
+            Vector3D smoothnormal = n0.scale(w).add(n1.scale(u)).add(n2.scale(v)).normalize();
+            if(smoothnormal.dot(rayDirection) > 0) smoothnormal = smoothnormal.scale(-1);
+            return new Intersection(true, t, hitPoint, this, smoothnormal);
+        }
         
         Vector3D normal = edge1.cross(edge2).normalize();
         if(normal.dot(rayDirection) > 0)  normal = normal.scale(-1);
+        //Ensure the normal is facing against the ray direction for correct lighting calculations. If the normal is facing in the same direction as the ray, flip it.
 
-        Vector3D hitPoint = ray.pointAt(t);
         return new Intersection(true, t, hitPoint, this, normal);
     }
 

@@ -19,6 +19,7 @@ public class ObjReader {
 
         private static List<Triangle> loadTriangles(String path, Color color) {
             List<Vector3D> vertices = new ArrayList<>();
+            List<Vector3D> normals = new ArrayList<>();
             List<Triangle> triangles = new ArrayList<>();
             try (BufferedReader br = new BufferedReader(new FileReader(path))) {
                 String linea;
@@ -30,21 +31,47 @@ public class ObjReader {
                         double z = Double.parseDouble(partes[3]);
                         vertices.add(new Vector3D(x, y, z));
                     }
+                    else if(linea.startsWith("vn")){
+                        String[] partes = linea.split("\\s+");
+                        double x = Double.parseDouble(partes[1]);
+                        double y = Double.parseDouble(partes[2]);
+                        double z = Double.parseDouble(partes[3]);
+                        normals.add(new Vector3D(x, y, z));
+                    }
                     else if(linea.startsWith("f ")) {
                         String[] partes = linea.split("\\s+");
                         int v1 = Integer.parseInt(partes[1].split("/")[0]) - 1;
                         int v2 = Integer.parseInt(partes[2].split("/")[0]) - 1;
                         int v3 = Integer.parseInt(partes[3].split("/")[0]) - 1;
+                        int n1 = 0, n2 = 0, n3 = 0, n4 = 0;
 
-                        if (partes.length == 5) {
-                            int v4 = Integer.parseInt(partes[4].split("/")[0]) - 1;
-                            Triangle triangle1 = new Triangle(vertices.get(v1), vertices.get(v2), vertices.get(v3), color);
-                            Triangle triangle2 = new Triangle(vertices.get(v1), vertices.get(v3), vertices.get(v4), color);
-                            triangles.add(triangle1);
-                            triangles.add(triangle2);
-                        } else {
-                            Triangle triangle = new Triangle(vertices.get(v1), vertices.get(v2), vertices.get(v3), color);
-                            triangles.add(triangle);
+                        if(partes[1].split("/").length >= 3){
+                            n1 = Integer.parseInt(partes[1].split("/")[2]) - 1;
+                            n2 = Integer.parseInt(partes[2].split("/")[2]) - 1;
+                            n3 = Integer.parseInt(partes[3].split("/")[2]) - 1;
+
+                            if (partes.length == 5) {
+                                int v4 = Integer.parseInt(partes[4].split("/")[0]) - 1;
+                                n4 = Integer.parseInt(partes[4].split("/")[2]) - 1;
+                                Triangle triangle1 = new Triangle(vertices.get(v1), vertices.get(v2), vertices.get(v3), normals.get(n1), normals.get(n2), normals.get(n3), color);
+                                Triangle triangle2 = new Triangle(vertices.get(v1), vertices.get(v3), vertices.get(v4), normals.get(n1), normals.get(n3), normals.get(n4), color);
+                                triangles.add(triangle1);
+                                triangles.add(triangle2);
+                            } else {
+                                Triangle triangle = new Triangle(vertices.get(v1), vertices.get(v2), vertices.get(v3), normals.get(n1), normals.get(n2), normals.get(n3), color);
+                                triangles.add(triangle);
+                            }
+                        }else{
+                            if (partes.length == 5) {
+                                int v4 = Integer.parseInt(partes[4].split("/")[0]) - 1;
+                                Triangle triangle1 = new Triangle(vertices.get(v1), vertices.get(v2), vertices.get(v3), color);
+                                Triangle triangle2 = new Triangle(vertices.get(v1), vertices.get(v3), vertices.get(v4), color);
+                                triangles.add(triangle1);
+                                triangles.add(triangle2);
+                            } else {
+                                Triangle triangle = new Triangle(vertices.get(v1), vertices.get(v2), vertices.get(v3), color);
+                                triangles.add(triangle);
+                            }
                         }
                     }
                 }

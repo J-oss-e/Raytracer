@@ -35,7 +35,7 @@ public class Raytracer extends Application {
 
         javafx.scene.Scene fxScene = new javafx.scene.Scene(root, WIDTH, HEIGHT, Color.BLACK);
 
-        primaryStage.setTitle("Raytracer v0.4");
+        primaryStage.setTitle("Raytracer v0.6");
         primaryStage.setScene(fxScene);
         primaryStage.setResizable(false);
         primaryStage.show();
