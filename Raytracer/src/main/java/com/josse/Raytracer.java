@@ -42,7 +42,7 @@ public class Raytracer extends Application {
     }
 
     private Scene buildScene() {
-        Camera camera = new Camera(new Vector3D(0, 5, 15), 60.0, WIDTH, HEIGHT, 0.5, 100.0);
+        Camera camera = new Camera(new Vector3D(2, 8, 20), 60.0, WIDTH, HEIGHT, 0.5, 100.0);
 
         Scene scene = new Scene(camera, Color.BLACK);
         
@@ -75,7 +75,7 @@ public class Raytracer extends Application {
 
     private Color trace(Ray ray, Scene scene, double near, double far) {
         Intersection closest = findClosest(ray, scene, near, far);
-        return shade(closest, scene, ray);
+        return shade(closest, scene);
     }
 
     private Intersection findClosest(Ray ray, Scene scene, double near, double far) {
@@ -98,7 +98,7 @@ public class Raytracer extends Application {
         return closest;
     }
 
-    private Color shade(Intersection closest, Scene scene, Ray ray){
+    private Color shade(Intersection closest, Scene scene){
         //If it doesn't hit anything, return the background color
         if (!closest.isHit()) {
             return scene.getBackgroundColor();
@@ -106,9 +106,6 @@ public class Raytracer extends Application {
 
         //If it does hit, calculate the color based on the lights and the material properties of the object
         Object3D object = closest.getObject();
-        Vector3D normal = closest.getNormal();
-        // If the normal is facing the ray, flip it
-        if (normal.dot(ray.getDirection()) > 0) normal = normal.scale(-1);
 
         Color objectColor = object.getColor();
         double r = 0, g = 0, b = 0;

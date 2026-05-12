@@ -42,6 +42,9 @@ public class Sphere extends Object3D {
 
         Vector3D hitPoint = ray.pointAt(t0);
         Vector3D normal = hitPoint.subtract(this.position).normalize();
+        if (normal.dot(ray.getDirection()) > 0) {
+            normal = normal.scale(-1);
+        }
         return new Intersection(true, t0, hitPoint, this, normal);
     }
 

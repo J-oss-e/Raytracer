@@ -35,8 +35,17 @@ public class ObjReader {
                         int v1 = Integer.parseInt(partes[1].split("/")[0]) - 1;
                         int v2 = Integer.parseInt(partes[2].split("/")[0]) - 1;
                         int v3 = Integer.parseInt(partes[3].split("/")[0]) - 1;
-                        Triangle triangle = new Triangle(vertices.get(v1), vertices.get(v2), vertices.get(v3), color);
-                        triangles.add(triangle);
+
+                        if (partes.length == 5) {
+                            int v4 = Integer.parseInt(partes[4].split("/")[0]) - 1;
+                            Triangle triangle1 = new Triangle(vertices.get(v1), vertices.get(v2), vertices.get(v3), color);
+                            Triangle triangle2 = new Triangle(vertices.get(v1), vertices.get(v3), vertices.get(v4), color);
+                            triangles.add(triangle1);
+                            triangles.add(triangle2);
+                        } else {
+                            Triangle triangle = new Triangle(vertices.get(v1), vertices.get(v2), vertices.get(v3), color);
+                            triangles.add(triangle);
+                        }
                     }
                 }
             }   catch (IOException e) {

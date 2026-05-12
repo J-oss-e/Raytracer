@@ -63,6 +63,7 @@ public class Triangle extends Object3D{
         //Is the intersection point behind the ray origin? If so, no hit occurs.
         
         Vector3D normal = edge1.cross(edge2).normalize();
+        if(normal.dot(rayDirection) > 0)  normal = normal.scale(-1);
 
         Vector3D hitPoint = ray.pointAt(t);
         return new Intersection(true, t, hitPoint, this, normal);
