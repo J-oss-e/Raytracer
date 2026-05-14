@@ -1,5 +1,6 @@
 package com.josse;
 
+import com.josse.lights.DirectionalLight;
 import com.josse.lights.Light;
 import com.josse.lights.PointLight;
 import com.josse.objects.Camera;
@@ -21,8 +22,8 @@ import javafx.stage.Stage;
 
 public class Raytracer extends Application {
 
-    private static final int WIDTH = 1800;
-    private static final int HEIGHT = 1000;
+    private static final int WIDTH = 800;
+    private static final int HEIGHT = 800;
 
     @Override
     public void start(Stage primaryStage) {
@@ -35,7 +36,7 @@ public class Raytracer extends Application {
 
         javafx.scene.Scene fxScene = new javafx.scene.Scene(root, WIDTH, HEIGHT, Color.BLACK);
 
-        primaryStage.setTitle("Raytracer v0.6");
+        primaryStage.setTitle("Raytracer v0.7");
         primaryStage.setScene(fxScene);
         primaryStage.setResizable(false);
         primaryStage.show();
@@ -46,7 +47,7 @@ public class Raytracer extends Application {
 
         Scene scene = new Scene(camera, Color.BLACK);
         
-        Model3D model = ObjReader.loadModel("Resources/utah_teapot2.obj", Color.WHITE, new Vector3D(0, 0, 0));
+        Model3D model = ObjReader.loadModel("Resources/utah_teapot.obj", Color.WHITE, new Vector3D(0, 0, 0));
         scene.addObject(model);
         Vector3D fl0 = new Vector3D(-10, -1,  10);
         Vector3D fl1 = new Vector3D( 10, -1,  10);
@@ -56,7 +57,7 @@ public class Raytracer extends Application {
         scene.addObject(new Triangle(fl0, fl1, fl2, Color.GRAY));
         scene.addObject(new Triangle(fl0, fl2, fl3, Color.GRAY));
 
-        //scene.addLight(new DirectionalLight(new Vector3D(0.0, -1.0, -1.0), Color.WHITE, 0.5));
+        scene.addLight(new DirectionalLight(new Vector3D(0.0, -1.0, -1.0), Color.WHITE, 1));
         scene.addLight(new PointLight(new Vector3D(0.0, 6.0, 10.0), Color.RED, 15));
 
         return scene;
@@ -105,6 +106,17 @@ public class Raytracer extends Application {
         return closest;
     }
 
+    private boolean isInShadow(Vector3D point, Vector3D normal, Light light, Scene scene){
+        Vector3D shadowOrigin =point.add(normal.scale(1e-4));
+        Vector3D toLight = light.getDirectionOfLight(point);
+        double shadowFar = light.getMaxShadowDistance(point);
+
+
+        Ray shadowRay = new Ray(shadowOrigin, toLight);
+        Intersection shadowHit = findClosest(shadowRay, scene, 1e-4, shadowFar);
+        return shadowHit.isHit(); 
+    }
+
     private Color shade(Intersection closest, Scene scene){
         //If it doesn't hit anything, return the background color
         if (!closest.isHit()) {
@@ -117,15 +129,9 @@ public class Raytracer extends Application {
         Color objectColor = object.getColor();
         double r = 0, g = 0, b = 0;
 
-        Vector3D shadowOrigin = closest.getPoint().add(closest.getNormal().scale(1e-4));
-
         for (Light light : scene.getLights()) {
-            Vector3D toLight = light.getDirectionOfLight(closest.getPoint());
-            double shadowFar = light.getMaxShadowDistance(closest.getPoint());
 
-            Ray shadowRay = new Ray(shadowOrigin, toLight);
-            Intersection shadowHit = findClosest(shadowRay, scene, 1e-4, shadowFar);
-            if (shadowHit.isHit()) continue;
+            if(isInShadow(closest.getPoint(), closest.getNormal(), light, scene)) continue;
 
             double NdotL = light.getNDotL(closest);
             if (NdotL <= 0) continue;

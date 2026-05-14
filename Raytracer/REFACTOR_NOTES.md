@@ -332,3 +332,55 @@
 
   Next: Verify smooth shading visually, then Step 6 — Camera look-at (Issue 5).
 
+  ---
+  5th Session — Reference architecture comparison + shadow casting + light falloff:
+
+  Reference architecture comparison (professor's repo @ 0f25e54):
+
+  | Dimension                  | Reference                          | Ours                          | Better     |
+  |----------------------------|------------------------------------|-------------------------------|------------|
+  | Renderer / display         | Plain class, PNG output            | Extends Application           | Reference  |
+  | Light hierarchy            | extends Object3D (LSP violation)   | Clean abstract                | Ours       |
+  | Camera hierarchy           | extends Object3D (LSP violation)   | Standalone                    | Ours       |
+  | Miss handling              | null returns                       | isHit() sentinel              | Ours       |
+  | Clipping                   | Z-coordinate (breaks with look-at) | Parametric T                  | Ours       |
+  | Vector3D math style        | Static, inside-out                 | Fluent, left-to-right         | Ours       |
+  | Barycentric                | Second-pass utility class          | Reused from Möller-Trumbore   | Ours       |
+  | Mesh position              | Baked destructively into vertices  | Stored separately             | Ours       |
+  | Shadow infrastructure      | caster exclusion (unused)          | Per-light (implemented)       | Ours       |
+  | OBJ smoothing groups       | Parses s N groups                  | Explicit vn only              | Reference  |
+  | Triangle color             | None (geometrically correct)       | Object3D (pragmatic)          | Reference  |
+
+  Shadow casting implemented:
+    - Old code cast a single shadow ray along the surface normal (wrong direction) before the
+      light loop. One result blocked or allowed all lights simultaneously.
+    - Fix: shadow test moved inside the light loop. Each light casts its own shadow ray.
+    - Shadow ray direction comes from light.getDirectionOfLight(hitPoint) — already existed
+      on Light, just wasn't wired to the shadow code.
+    - Shadow ray far limit comes from light.getMaxShadowDistance(hitPoint):
+        DirectionalLight → POSITIVE_INFINITY (no position, rays go forever)
+        PointLight → distance to light position (objects behind the light don't cast shadows)
+    - getMaxShadowDistance() added as abstract on Light, implemented on both subclasses.
+    - Floor plane added to scene as two Triangles (extends Object3D directly — no new class needed)
+      to give shadows a receiver surface.
+
+  Light falloff (Option B — separate method) implemented:
+    - getAttenuation(Vector3D point) added as abstract on Light.
+    - DirectionalLight returns 1.0 — no falloff, sun has no meaningful distance.
+    - PointLight returns 1.0 / max(d, 1e-4) — linear falloff. Guard on max() prevents
+      division by zero if surface is essentially touching the light.
+    - shade() multiplies each light's contribution by attenuation as a separate factor:
+        contribution = NdotL × intensity × attenuation
+    - getNDotL() stays purely geometric (angular factor only). Attenuation is its own concern.
+    ▎ With 1/d falloff, intensity must scale with distance. At distance ~12, intensity ~12
+      produces similar brightness to intensity ~1 at distance ~1. Tune accordingly.
+
+  Key architectural decisions this session:
+    ▎ Shadow test inside the light loop is the only correct structure for multi-light scenes.
+    ▎ getDirectionOfLight() on Light makes the shadow code light-type-agnostic — adding
+      SpotLight later requires no changes to shade().
+    ▎ Separate getAttenuation() keeps getNDotL() semantically clean. When SpotLight adds
+      cone falloff, it goes into getAttenuation(), not into getNDotL().
+
+  Next: Step 6 — Camera look-at (Issue 5).
+
