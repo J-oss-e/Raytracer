@@ -6,6 +6,7 @@ import com.josse.lights.PointLight;
 import com.josse.objects.Camera;
 import com.josse.objects.Model3D;
 import com.josse.objects.Object3D;
+import com.josse.objects.Triangle;
 import com.josse.tools.Intersection;
 import com.josse.tools.ObjReader;
 import com.josse.tools.Ray;
@@ -21,8 +22,8 @@ import javafx.stage.Stage;
 
 public class Raytracer extends Application {
 
-    private static final int WIDTH = 1200;
-    private static final int HEIGHT = 800;
+    private static final int WIDTH = 1800;
+    private static final int HEIGHT = 1000;
 
     @Override
     public void start(Stage primaryStage) {
@@ -42,15 +43,22 @@ public class Raytracer extends Application {
     }
 
     private Scene buildScene() {
-        Camera camera = new Camera(new Vector3D(2, 8, 20), 60.0, WIDTH, HEIGHT, 0.5, 100.0);
+        Camera camera = new Camera(new Vector3D(0, 5, 18), 60.0, WIDTH, HEIGHT, 0.5, 100.0);
 
         Scene scene = new Scene(camera, Color.BLACK);
         
-        Model3D model = ObjReader.loadModel("Resources/Lowpoly_tree_sample.obj", Color.GREEN, new Vector3D(0, 0, 0));
+        Model3D model = ObjReader.loadModel("Resources/utah_teapot2.obj", Color.WHITE, new Vector3D(0, 0, 0));
         scene.addObject(model);
+        Vector3D fl0 = new Vector3D(-10, -1,  10);
+        Vector3D fl1 = new Vector3D( 10, -1,  10);
+        Vector3D fl2 = new Vector3D( 10, -1, -10);
+        Vector3D fl3 = new Vector3D(-10, -1, -10);
 
-        scene.addLight(new DirectionalLight(new Vector3D(0.0, -1.0, -1.0), Color.WHITE, 1.0));
-        scene.addLight(new PointLight(new Vector3D(0.0, 10.0, 10.0), Color.WHITE, 0.8));
+        scene.addObject(new Triangle(fl0, fl1, fl2, Color.GRAY));
+        scene.addObject(new Triangle(fl0, fl2, fl3, Color.GRAY));
+
+        scene.addLight(new DirectionalLight(new Vector3D(0.0, -1.0, -1.0), Color.WHITE, 0.5));
+        scene.addLight(new PointLight(new Vector3D(0.0, 60.0, 10.0), Color.RED, 0.8));
 
         return scene;
     }
@@ -109,12 +117,18 @@ public class Raytracer extends Application {
 
         Color objectColor = object.getColor();
         double r = 0, g = 0, b = 0;
-    
-        // For each light in the scene, calculate the contribution to the color based on the light's intensity, color, and direction
-        for (Light light : scene.getLights()) {
-            double NdotL = light.getNDotL(closest);
 
-            // If the surface is perpendicular to the light, skip to the next light
+        Vector3D shadowOrigin = closest.getPoint().add(closest.getNormal().scale(1e-4));
+
+        for (Light light : scene.getLights()) {
+            Vector3D toLight = light.getDirectionOfLight(closest.getPoint());
+            double shadowFar = light.getMaxShadowDistance(closest.getPoint());
+
+            Ray shadowRay = new Ray(shadowOrigin, toLight);
+            Intersection shadowHit = findClosest(shadowRay, scene, 1e-4, shadowFar);
+            if (shadowHit.isHit()) continue;
+
+            double NdotL = light.getNDotL(closest);
             if (NdotL <= 0) continue;
             double li = light.getIntensity();
             Color lc = light.getColor();

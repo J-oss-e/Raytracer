@@ -14,8 +14,21 @@ public class DirectionalLight extends Light {
         this.direction = direction.normalize();
     }
 
+    //The direction field already shows the ray from the light source to the point, 
+    //so if we negate it, it will show the direction from the point to the light source.
+    @Override
+    public Vector3D getDirectionOfLight(Vector3D point) {
+        return direction.scale(-1);
+    }
+
     @Override
     public double getNDotL(Intersection intersection) {
-        return Math.max(0.0, intersection.getNormal().dot(direction.scale(-1)));
-    }    
+        Vector3D lightDir = getDirectionOfLight(intersection.getPoint());
+        return Math.max(0.0, intersection.getNormal().dot(lightDir));
+    }
+
+    @Override
+    public double getMaxShadowDistance(Vector3D point) {
+        return Double.POSITIVE_INFINITY;
+    }
 }

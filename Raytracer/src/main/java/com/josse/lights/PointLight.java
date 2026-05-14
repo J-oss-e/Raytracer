@@ -14,9 +14,18 @@ public class PointLight extends Light {
     }
 
     @Override
+    public Vector3D getDirectionOfLight(Vector3D point) {
+        return position.subtract(point).normalize();
+    }
+
+    @Override
     public double getNDotL(Intersection intersection) {
-        Vector3D lightDir = position.subtract(intersection.getPoint()).normalize();
+        Vector3D lightDir = getDirectionOfLight(intersection.getPoint());
         return Math.max(0.0, intersection.getNormal().dot(lightDir));
     }
-    
+
+    @Override
+    public double getMaxShadowDistance(Vector3D point) {
+        return position.subtract(point).length();
+    }
 }
