@@ -13,6 +13,7 @@ public abstract class Light {
     public abstract double getNDotL(Intersection intersection);
     public abstract Vector3D getDirectionOfLight(Vector3D point);
     public abstract double getMaxShadowDistance(Vector3D point);
+    public abstract double getAttenuation(Vector3D point);
 
     public Light(Color color, double intensity) {
         this.color = color;

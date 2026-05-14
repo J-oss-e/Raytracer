@@ -1,6 +1,5 @@
 package com.josse;
 
-import com.josse.lights.DirectionalLight;
 import com.josse.lights.Light;
 import com.josse.lights.PointLight;
 import com.josse.objects.Camera;
@@ -57,8 +56,8 @@ public class Raytracer extends Application {
         scene.addObject(new Triangle(fl0, fl1, fl2, Color.GRAY));
         scene.addObject(new Triangle(fl0, fl2, fl3, Color.GRAY));
 
-        scene.addLight(new DirectionalLight(new Vector3D(0.0, -1.0, -1.0), Color.WHITE, 0.5));
-        scene.addLight(new PointLight(new Vector3D(0.0, 60.0, 10.0), Color.RED, 0.8));
+        //scene.addLight(new DirectionalLight(new Vector3D(0.0, -1.0, -1.0), Color.WHITE, 0.5));
+        scene.addLight(new PointLight(new Vector3D(0.0, 6.0, 10.0), Color.RED, 15));
 
         return scene;
     }
@@ -131,11 +130,12 @@ public class Raytracer extends Application {
             double NdotL = light.getNDotL(closest);
             if (NdotL <= 0) continue;
             double li = light.getIntensity();
+            double attenuation = light.getAttenuation(closest.getPoint());
             Color lc = light.getColor();
 
-            r += lc.getRed()   * objectColor.getRed()   * li * NdotL;
-            g += lc.getGreen() * objectColor.getGreen() * li * NdotL;
-            b += lc.getBlue()  * objectColor.getBlue()  * li * NdotL;
+            r += lc.getRed()   * objectColor.getRed()   * li * NdotL * attenuation;
+            g += lc.getGreen() * objectColor.getGreen() * li * NdotL * attenuation;
+            b += lc.getBlue()  * objectColor.getBlue()  * li * NdotL * attenuation;
         }
 
         // Clamp the color values to the range [0, 1]

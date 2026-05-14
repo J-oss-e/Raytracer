@@ -31,4 +31,9 @@ public class DirectionalLight extends Light {
     public double getMaxShadowDistance(Vector3D point) {
         return Double.POSITIVE_INFINITY;
     }
+
+    @Override
+    public double getAttenuation(Vector3D point) {
+        return 1.0;
+    }
 }

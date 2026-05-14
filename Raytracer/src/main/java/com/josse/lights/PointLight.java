@@ -28,4 +28,10 @@ public class PointLight extends Light {
     public double getMaxShadowDistance(Vector3D point) {
         return position.subtract(point).length();
     }
+
+    @Override
+    public double getAttenuation(Vector3D point) {
+        double d = position.subtract(point).length();
+        return 1.0 / Math.max(d, 1e-4);
+    }
 }
