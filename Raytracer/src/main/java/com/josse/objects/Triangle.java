@@ -81,7 +81,7 @@ public class Triangle extends Object3D{
         Vector3D hitPoint = ray.pointAt(t);
         if(n0 != null) {
             double w = 1 - u - v;
-            Vector3D smoothnormal = n0.scale(w).add(n1.scale(u)).add(n2.scale(v)).normalize();
+            Vector3D smoothnormal = n0.scale(w).add(n1.scale(v)).add(n2.scale(u)).normalize();
             if(smoothnormal.dot(rayDirection) > 0) smoothnormal = smoothnormal.scale(-1);
             return new Intersection(true, t, hitPoint, this, smoothnormal);
         }

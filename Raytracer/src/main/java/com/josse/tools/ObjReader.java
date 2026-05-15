@@ -31,12 +31,12 @@ public class ObjReader {
                         double z = Double.parseDouble(partes[3]);
                         vertices.add(new Vector3D(x, y, z));
                     }
-                    else if(linea.startsWith("vn")){
+                    else if(linea.startsWith("vn ")){
                         String[] partes = linea.split("\\s+");
                         double x = Double.parseDouble(partes[1]);
                         double y = Double.parseDouble(partes[2]);
                         double z = Double.parseDouble(partes[3]);
-                        normals.add(new Vector3D(x, y, z));
+                        normals.add(new Vector3D(x, y, z).normalize());
                     }
                     else if(linea.startsWith("f ")) {
                         String[] partes = linea.split("\\s+");
