@@ -71,16 +71,18 @@ public class Raytracer extends Application {
         WritableImage image = new WritableImage(w, h);
         PixelWriter pw = image.getPixelWriter();
 
+        int barWidth = 40;
         for (int y = 0; y < h; y++) {
             for (int x = 0; x < w; x++) {
                 Ray ray = camera.generateRay(x, y);
                 Color color = trace(ray, scene, camera.getNear(), camera.getFar());
                 pw.setColor(x, y, color);
             }
-            int percent = (y + 1) * 100 / h;
-            System.out.print("\rRendering: " + percent + "%");
+            int filled = (y + 1) * barWidth / h;
+            String bar = "#".repeat(filled) + "-".repeat(barWidth - filled);
+            System.out.printf("\rRendering: [%s] %d / %d rows", bar, y + 1, h);
         }
-        System.out.println("\rRendering: 100% — done.");
+        System.out.println("\rRendering: [" + "#".repeat(barWidth) + "] " + h + " / " + h + " rows - done.");
         return image;
     }
 

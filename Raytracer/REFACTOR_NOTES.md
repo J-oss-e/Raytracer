@@ -382,5 +382,34 @@
     ▎ Separate getAttenuation() keeps getNDotL() semantically clean. When SpotLight adds
       cone falloff, it goes into getAttenuation(), not into getNDotL().
 
+  6th Session — Smooth shading barycentric bug fixed:
+
+  Root cause: Triangle.getIntersection() uses a non-standard Möller-Trumbore variant
+  where the ray direction is crossed with edge1 (not edge2) first:
+    dirCrossEdge1 = cross(dir, edge1)
+    det = dot(edge2, dirCrossEdge1)
+    u   = dot(toOrigin, dirCrossEdge1) / det
+
+  In the standard formulation (Shirley, PBRT, Wikipedia), crossing with edge2 makes
+  u = barycentric weight for v1 and v = weight for v2.
+  In this variant (crossing with edge1), u = weight for v2 and v = weight for v1.
+
+  The smooth normal line read:
+    n0.scale(w).add(n1.scale(u)).add(n2.scale(v))
+  which used n1 (assigned to v1) with u (which is v2's weight), and vice versa.
+
+  Symptom: crystalline hard-edge artifacts on curved surfaces because every triangle
+  interpolated its normals with swapped weights, creating discontinuities at all
+  shared edges.
+
+  Fix: swap u and v only in the interpolation:
+    n0.scale(w).add(n1.scale(v)).add(n2.scale(u))
+  The intersection test (range checks, t computation, hit point) is unaffected —
+  the triangle is found correctly; only the barycentric weights had wrong vertex assignments.
+
+  ▎ Note for UV textures: when vt coordinates are added to Intersection, the same
+    swap applies — store (v, u) not (u, v) as the texture coordinate pair, or fix
+    the Möller-Trumbore to match the standard convention at that point.
+
   Next: Step 6 — Camera look-at (Issue 5).
 
