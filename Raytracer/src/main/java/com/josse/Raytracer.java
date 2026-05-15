@@ -47,7 +47,7 @@ public class Raytracer extends Application {
 
         Scene scene = new Scene(camera, Color.BLACK);
         
-        Model3D model = ObjReader.loadModel("Resources/utah_teapot.obj", Color.WHITE, new Vector3D(0, 0, 0));
+        Model3D model = ObjReader.loadModel("Resources/utah_teapot2.obj", Color.WHITE, new Vector3D(0, 0, 0));
         scene.addObject(model);
         Vector3D fl0 = new Vector3D(-10, -1,  10);
         Vector3D fl1 = new Vector3D( 10, -1,  10);
@@ -77,7 +77,10 @@ public class Raytracer extends Application {
                 Color color = trace(ray, scene, camera.getNear(), camera.getFar());
                 pw.setColor(x, y, color);
             }
+            int percent = (y + 1) * 100 / h;
+            System.out.print("\rRendering: " + percent + "%");
         }
+        System.out.println("\rRendering: 100% — done.");
         return image;
     }
 
