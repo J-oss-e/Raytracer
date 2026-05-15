@@ -47,7 +47,7 @@ public class Raytracer extends Application {
 
         Scene scene = new Scene(camera, Color.BLACK);
         
-        Model3D model = ObjReader.loadModel("Resources/utah_teapot2.obj", Color.WHITE, new Vector3D(0, 0, 0));
+        Model3D model = ObjReader.loadModel("Resources/Lowpoly_tree_sample.obj", Color.WHITE, new Vector3D(0, 0, 0));
         scene.addObject(model);
         Vector3D fl0 = new Vector3D(-10, -1,  10);
         Vector3D fl1 = new Vector3D( 10, -1,  10);
@@ -79,10 +79,11 @@ public class Raytracer extends Application {
                 pw.setColor(x, y, color);
             }
             int filled = (y + 1) * barWidth / h;
+            int percent = (y + 1) * 100 / h;
             String bar = "#".repeat(filled) + "-".repeat(barWidth - filled);
-            System.out.printf("\rRendering: [%s] %d / %d rows", bar, y + 1, h);
+            System.out.printf("\rRendering: [%s] %d%%", bar, percent);
         }
-        System.out.println("\rRendering: [" + "#".repeat(barWidth) + "] " + h + " / " + h + " rows - done.");
+        System.out.println("\rRendering: [" + "#".repeat(barWidth) + "] 100% - done.");
         return image;
     }
 
