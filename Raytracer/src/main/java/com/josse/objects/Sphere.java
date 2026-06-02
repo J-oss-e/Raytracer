@@ -1,5 +1,6 @@
 package com.josse.objects;
 
+import com.josse.tools.AABB;
 import com.josse.tools.Intersection;
 import com.josse.tools.Ray;
 import com.josse.tools.Vector3D;
@@ -46,6 +47,13 @@ public class Sphere extends Object3D {
             normal = normal.scale(-1);
         }
         return new Intersection(true, t0, hitPoint, this, normal);
+    }
+
+    @Override
+    public AABB getBoundingBox() {
+        Vector3D min = new Vector3D(position.x - radius, position.y - radius, position.z - radius);
+        Vector3D max = new Vector3D(position.x + radius, position.y + radius, position.z + radius);
+        return new AABB(min, max);
     }
 
     public double getRadius() { return radius; }

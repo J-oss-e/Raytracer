@@ -1,5 +1,6 @@
 package com.josse.objects;
 
+import com.josse.tools.AABB;
 import com.josse.tools.Intersection;
 import com.josse.tools.Ray;
 import com.josse.tools.Vector3D;
@@ -28,4 +29,6 @@ public abstract class Object3D {
 
     public void setPosition(Vector3D position) { this.position = position; }
     public void setColor(Color color) { this.color = color; }
+
+    public abstract AABB getBoundingBox();
 }

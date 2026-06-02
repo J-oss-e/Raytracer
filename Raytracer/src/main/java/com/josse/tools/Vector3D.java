@@ -75,4 +75,29 @@ public class Vector3D {
     public String toString() {
         return "Vector3D(" + x + ", " + y + ", " + z + ")";
     }
+
+    public static Vector3D min(Vector3D a, Vector3D b) {
+        return new Vector3D(
+            Math.min(a.x, b.x),
+            Math.min(a.y, b.y),
+            Math.min(a.z, b.z)
+        );
+    }
+
+    public static Vector3D max(Vector3D a, Vector3D b) {
+        return new Vector3D(
+            Math.max(a.x, b.x),
+            Math.max(a.y, b.y),
+            Math.max(a.z, b.z)
+        );
+    }
+
+    public double get(int index) {
+        switch (index) {
+            case 0: return x;
+            case 1: return y;
+            case 2: return z;
+            default: throw new IndexOutOfBoundsException("Index must be 0, 1, or 2");
+        }
+    }
 }

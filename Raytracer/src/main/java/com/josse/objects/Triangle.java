@@ -1,5 +1,6 @@
 package com.josse.objects;
 
+import com.josse.tools.AABB;
 import com.josse.tools.Intersection;
 import com.josse.tools.Ray;
 import com.josse.tools.Vector3D;
@@ -91,6 +92,13 @@ public class Triangle extends Object3D{
         //Ensure the normal is facing against the ray direction for correct lighting calculations. If the normal is facing in the same direction as the ray, flip it.
 
         return new Intersection(true, t, hitPoint, this, normal);
+    }
+
+    @Override
+    public AABB getBoundingBox() {
+        Vector3D min = Vector3D.min(Vector3D.min(v0, v1), v2);
+        Vector3D max = Vector3D.max(Vector3D.max(v0, v1), v2);
+        return new AABB(min, max);
     }
 
     public Vector3D getV0() { return v0; }
