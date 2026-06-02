@@ -22,7 +22,7 @@ import javafx.stage.Stage;
 
 public class Raytracer extends Application {
 
-    private static final int WIDTH = 800;
+    private static final int WIDTH = 1200;
     private static final int HEIGHT = 800;
 
     @Override
@@ -43,37 +43,52 @@ public class Raytracer extends Application {
     }
 
     private Scene buildScene() {
-        // Camera pulled back and slightly elevated to see all three spheres clearly
         Camera camera = new Camera(new Vector3D(0, 3, 14), 60.0, WIDTH, HEIGHT, 0.5, 100.0);
 
-        Scene scene = new Scene(camera, Color.BLACK);
+        Scene scene = new Scene(camera, Color.PINK);
 
-        // Floor
-        Vector3D fl0 = new Vector3D(-10, -1.5,  10);
-        Vector3D fl1 = new Vector3D( 10, -1.5,  10);
-        Vector3D fl2 = new Vector3D( 10, -1.5, -10);
-        Vector3D fl3 = new Vector3D(-10, -1.5, -10);
-        scene.addObject(new Triangle(fl0, fl1, fl2, Color.DARKGRAY));
-        scene.addObject(new Triangle(fl0, fl2, fl3, Color.DARKGRAY));
+        // Floor — flat at y=-1.5, spans the full scene
+        Vector3D fl0 = new Vector3D(-50, -1.5,  12);
+        Vector3D fl1 = new Vector3D( 50, -1.5,  12);
+        Vector3D fl2 = new Vector3D( 50, -1.5,  -7);
+        Vector3D fl3 = new Vector3D(-50, -1.5,  -7);
+        Triangle floor1 = new Triangle(fl0, fl1, fl2, Color.DARKGRAY);
+        Triangle floor2 = new Triangle(fl0, fl2, fl3, Color.DARKGRAY);
+        floor1.setMaterial(new Material(0.05, 0.8, 0.1, 8, 0.0, 0.0, 1.0));
+        floor2.setMaterial(new Material(0.05, 0.8, 0.1, 8, 0.0, 0.0, 1.0));
+        scene.addObject(floor1);
+        scene.addObject(floor2);
 
-        // LEFT — very shiny blue sphere (shininess=128, tight pinpoint highlight)
-        Sphere shiny = new Sphere(new Vector3D(-4, 0, 0), 1.5, Color.CORNFLOWERBLUE);
-        shiny.setMaterial(new Material(0.05, 0.5, 1.0, 128, 0.0, 0.0, 1.0));
-        scene.addObject(shiny);
+        // Mirror back wall — vertical, behind the spheres at z=-6, facing the camera
+        Vector3D wl0 = new Vector3D(-10, -1.5, -6);
+        Vector3D wl1 = new Vector3D( 10, -1.5, -6);
+        Vector3D wl2 = new Vector3D( 10,  8.0, -6);
+        Vector3D wl3 = new Vector3D(-10,  8.0, -6);
+        Triangle wall1 = new Triangle(wl0, wl1, wl2, Color.WHITE);
+        Triangle wall2 = new Triangle(wl0, wl2, wl3, Color.WHITE);
+        wall1.setMaterial(new Material(0.0, 0.05, 0.0, 1, 1, 0.0, 1.0));
+        wall2.setMaterial(new Material(0.0, 0.05, 0.0, 1, 1, 0.0, 1.0));
+        scene.addObject(wall1);
+        scene.addObject(wall2);
 
-        // CENTER — medium shininess white sphere (shininess=16, broad soft glow)
+        // LEFT — mirror sphere, reflects the scene around it
+        Sphere mirror = new Sphere(new Vector3D(-4, 0, 0), 1.5, Color.WHITE);
+        mirror.setMaterial(new Material(0.02, 0.05, 0.5, 64, 0.85, 0.0, 1.0));
+        scene.addObject(mirror);
+
+        // CENTER — broad specular glow, no reflection
         Sphere medium = new Sphere(new Vector3D(0, 0, 0), 1.5, Color.WHITE);
         medium.setMaterial(new Material(0.05, 0.7, 0.9, 16, 0.0, 0.0, 1.0));
         scene.addObject(medium);
 
-        // RIGHT — matte red sphere (specular=0, diffuse only — no highlight)
+        // RIGHT — matte red, diffuse only
         Sphere matte = new Sphere(new Vector3D(4, 0, 0), 1.5, Color.TOMATO);
         matte.setMaterial(new Material(0.05, 0.9, 0.0, 1, 0.0, 0.0, 1.0));
         scene.addObject(matte);
 
-        // Main light — white point light, upper-left, creates the specular highlights
+        // Main white point light — upper-left, primary source of highlights
         scene.addLight(new PointLight(new Vector3D(-2, 6, 8), Color.WHITE, 25));
-        // Fill light — dim directional from the right, softens shadow sides
+        // Soft fill — dim directional from the right, lifts shadow sides
         scene.addLight(new DirectionalLight(new Vector3D(1.0, -0.3, -0.5), Color.WHITE, 0.15));
 
         return scene;
@@ -91,7 +106,7 @@ public class Raytracer extends Application {
         for (int y = 0; y < h; y++) {
             for (int x = 0; x < w; x++) {
                 Ray ray = camera.generateRay(x, y);
-                Color color = trace(ray, scene, camera.getNear(), camera.getFar());
+                Color color = trace(ray, scene, camera.getNear(), camera.getFar(), 4);
                 pw.setColor(x, y, color);
             }
             int filled = (y + 1) * barWidth / h;
@@ -103,9 +118,9 @@ public class Raytracer extends Application {
         return image;
     }
 
-    private Color trace(Ray ray, Scene scene, double near, double far) {
+    private Color trace(Ray ray, Scene scene, double near, double far, int depth) {
         Intersection closest = findClosest(ray, scene, near, far);
-        return shade(closest, ray, scene);
+        return shade(closest, ray, scene, depth);
     }
 
     private Intersection findClosest(Ray ray, Scene scene, double near, double far) {
@@ -139,7 +154,7 @@ public class Raytracer extends Application {
         return shadowHit.isHit(); 
     }
 
-    private Color shade(Intersection closest, Ray ray, Scene scene){
+    private Color shade(Intersection closest, Ray ray, Scene scene, int depth) {
         //If it doesn't hit anything, return the background color
         if (!closest.isHit()) {
             return scene.getBackgroundColor();
@@ -185,6 +200,50 @@ public class Raytracer extends Application {
                 b += lc.getBlue()  * intensity * spec * mat.getSpecular() * attenuation;
             }
         }
+
+        if(mat.getReflectivity() > 0 && depth > 0){
+            Vector3D d = ray.getDirection();
+            Vector3D n = closest.getNormal();
+            Vector3D reflectDir = d.subtract(n.scale(2.0 * d.dot(n))).normalize();
+            Vector3D reflectOrigin = closest.getPoint().add(closest.getNormal().scale(1e-4));
+            Ray reflectRay = new Ray(reflectOrigin, reflectDir);
+            Color reflectColor = trace(reflectRay, scene, 1e-4, Double.POSITIVE_INFINITY, depth - 1);
+            r = (1 - mat.getReflectivity()) * r + mat.getReflectivity() * reflectColor.getRed();
+            g = (1 - mat.getReflectivity()) * g + mat.getReflectivity() * reflectColor.getGreen();
+            b = (1 - mat.getReflectivity()) * b + mat.getReflectivity() * reflectColor.getBlue();
+        }
+
+        if(mat.getTransparency() > 0 && depth > 0){
+            Vector3D d = ray.getDirection();
+            Vector3D n = closest.getNormal();
+            boolean entering = d.dot(n) < 0;
+            Vector3D refractNormal = entering ? n : n.scale(-1);
+            double eta = entering ? (1.0 / mat.getIor()) : mat.getIor();
+
+            double cosI = -d.dot(refractNormal);
+            double sinT2 = eta * eta * (1.0 - cosI * cosI);
+            if (sinT2 <= 1.0) {
+                double cosT = Math.sqrt(1.0 - sinT2);
+                Vector3D refractDir = d.scale(eta).add(refractNormal.scale(eta * cosI - cosT)).normalize();
+                Vector3D refractOrigin = closest.getPoint().subtract(refractNormal.scale(1e-4));
+                Ray refractRay = new Ray(refractOrigin, refractDir);
+                Color refractColor = trace(refractRay, scene, 1e-4,
+                        Double.POSITIVE_INFINITY, depth - 1);
+                r = (1 - mat.getTransparency()) * r + mat.getTransparency() * refractColor.getRed();
+                g = (1 - mat.getTransparency()) * g + mat.getTransparency() * refractColor.getGreen();
+                b = (1 - mat.getTransparency()) * b + mat.getTransparency() * refractColor.getBlue();
+            } else {
+                // Total internal reflection — all light reflects, regardless of reflectivity
+                Vector3D reflectDir = d.subtract(n.scale(2.0 * d.dot(n))).normalize();
+                Vector3D reflectOrigin = closest.getPoint().add(refractNormal.scale(1e-4));
+                Ray reflectRay = new Ray(reflectOrigin, reflectDir);
+                Color reflectColor = trace(reflectRay, scene, 1e-4, Double.POSITIVE_INFINITY, depth - 1);
+                r = reflectColor.getRed();
+                g = reflectColor.getGreen();
+                b = reflectColor.getBlue();
+            }
+        }
+        
 
         // Clamp the color values to the range [0, 1]
         r = Math.min(1.0, r);
