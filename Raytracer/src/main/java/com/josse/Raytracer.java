@@ -4,11 +4,11 @@ import com.josse.lights.DirectionalLight;
 import com.josse.lights.Light;
 import com.josse.lights.PointLight;
 import com.josse.objects.Camera;
-import com.josse.objects.Model3D;
 import com.josse.objects.Object3D;
+import com.josse.objects.Sphere;
 import com.josse.objects.Triangle;
 import com.josse.tools.Intersection;
-import com.josse.tools.ObjReader;
+import com.josse.tools.Material;
 import com.josse.tools.Ray;
 import com.josse.tools.Vector3D;
 
@@ -36,29 +36,45 @@ public class Raytracer extends Application {
 
         javafx.scene.Scene fxScene = new javafx.scene.Scene(root, WIDTH, HEIGHT, Color.BLACK);
 
-        primaryStage.setTitle("Raytracer v0.7");
+        primaryStage.setTitle("Raytracer v1.1");
         primaryStage.setScene(fxScene);
         primaryStage.setResizable(false);
         primaryStage.show();
     }
 
     private Scene buildScene() {
-        Camera camera = new Camera(new Vector3D(0, 5, 18), 60.0, WIDTH, HEIGHT, 0.5, 100.0);
+        // Camera pulled back and slightly elevated to see all three spheres clearly
+        Camera camera = new Camera(new Vector3D(0, 3, 14), 60.0, WIDTH, HEIGHT, 0.5, 100.0);
 
         Scene scene = new Scene(camera, Color.BLACK);
-        
-        Model3D model = ObjReader.loadModel("Resources/Lowpoly_tree_sample.obj", Color.WHITE, new Vector3D(0, 0, 0));
-        scene.addObject(model);
-        Vector3D fl0 = new Vector3D(-10, -1,  10);
-        Vector3D fl1 = new Vector3D( 10, -1,  10);
-        Vector3D fl2 = new Vector3D( 10, -1, -10);
-        Vector3D fl3 = new Vector3D(-10, -1, -10);
 
-        scene.addObject(new Triangle(fl0, fl1, fl2, Color.GRAY));
-        scene.addObject(new Triangle(fl0, fl2, fl3, Color.GRAY));
+        // Floor
+        Vector3D fl0 = new Vector3D(-10, -1.5,  10);
+        Vector3D fl1 = new Vector3D( 10, -1.5,  10);
+        Vector3D fl2 = new Vector3D( 10, -1.5, -10);
+        Vector3D fl3 = new Vector3D(-10, -1.5, -10);
+        scene.addObject(new Triangle(fl0, fl1, fl2, Color.DARKGRAY));
+        scene.addObject(new Triangle(fl0, fl2, fl3, Color.DARKGRAY));
 
-        scene.addLight(new DirectionalLight(new Vector3D(0.0, -1.0, -1.0), Color.WHITE, 1));
-        scene.addLight(new PointLight(new Vector3D(0.0, 6.0, 10.0), Color.RED, 15));
+        // LEFT — very shiny blue sphere (shininess=128, tight pinpoint highlight)
+        Sphere shiny = new Sphere(new Vector3D(-4, 0, 0), 1.5, Color.CORNFLOWERBLUE);
+        shiny.setMaterial(new Material(0.05, 0.5, 1.0, 128, 0.0, 0.0, 1.0));
+        scene.addObject(shiny);
+
+        // CENTER — medium shininess white sphere (shininess=16, broad soft glow)
+        Sphere medium = new Sphere(new Vector3D(0, 0, 0), 1.5, Color.WHITE);
+        medium.setMaterial(new Material(0.05, 0.7, 0.9, 16, 0.0, 0.0, 1.0));
+        scene.addObject(medium);
+
+        // RIGHT — matte red sphere (specular=0, diffuse only — no highlight)
+        Sphere matte = new Sphere(new Vector3D(4, 0, 0), 1.5, Color.TOMATO);
+        matte.setMaterial(new Material(0.05, 0.9, 0.0, 1, 0.0, 0.0, 1.0));
+        scene.addObject(matte);
+
+        // Main light — white point light, upper-left, creates the specular highlights
+        scene.addLight(new PointLight(new Vector3D(-2, 6, 8), Color.WHITE, 25));
+        // Fill light — dim directional from the right, softens shadow sides
+        scene.addLight(new DirectionalLight(new Vector3D(1.0, -0.3, -0.5), Color.WHITE, 0.15));
 
         return scene;
     }
@@ -89,7 +105,7 @@ public class Raytracer extends Application {
 
     private Color trace(Ray ray, Scene scene, double near, double far) {
         Intersection closest = findClosest(ray, scene, near, far);
-        return shade(closest, scene);
+        return shade(closest, ray, scene);
     }
 
     private Intersection findClosest(Ray ray, Scene scene, double near, double far) {
@@ -123,7 +139,7 @@ public class Raytracer extends Application {
         return shadowHit.isHit(); 
     }
 
-    private Color shade(Intersection closest, Scene scene){
+    private Color shade(Intersection closest, Ray ray, Scene scene){
         //If it doesn't hit anything, return the background color
         if (!closest.isHit()) {
             return scene.getBackgroundColor();
@@ -131,9 +147,14 @@ public class Raytracer extends Application {
 
         //If it does hit, calculate the color based on the lights and the material properties of the object
         Object3D object = closest.getObject();
-
         Color objectColor = object.getColor();
-        double r = 0, g = 0, b = 0;
+        Material mat = object.getMaterial();
+        double r = mat.getAmbient() * objectColor.getRed();
+        double g = mat.getAmbient() * objectColor.getGreen();
+        double b = mat.getAmbient() * objectColor.getBlue();
+
+        //View direction is the opposite of the ray direction
+        Vector3D viewDir = ray.getDirection().scale(-1);
 
         for (Light light : scene.getLights()) {
 
@@ -141,13 +162,28 @@ public class Raytracer extends Application {
 
             double NdotL = light.getNDotL(closest);
             if (NdotL <= 0) continue;
-            double li = light.getIntensity();
+
+            double intensity = light.getIntensity();
             double attenuation = light.getAttenuation(closest.getPoint());
             Color lc = light.getColor();
+            Vector3D lightDir = light.getDirectionOfLight(closest.getPoint());
 
-            r += lc.getRed()   * objectColor.getRed()   * li * NdotL * attenuation;
-            g += lc.getGreen() * objectColor.getGreen() * li * NdotL * attenuation;
-            b += lc.getBlue()  * objectColor.getBlue()  * li * NdotL * attenuation;
+            //Diffuse component using Lambert's cosine law
+            r += lc.getRed()   * objectColor.getRed()   * mat.getDiffuse() * intensity * NdotL * attenuation;
+            g += lc.getGreen() * objectColor.getGreen() * mat.getDiffuse() * intensity * NdotL * attenuation;
+            b += lc.getBlue()  * objectColor.getBlue()  * mat.getDiffuse() * intensity * NdotL * attenuation;
+
+            //Half Vector for Blinn-Phong specular calculation. Is the normalized sum of the light direction and the view direction
+            Vector3D halfVector = lightDir.add(viewDir).normalize();
+            double NdotH = closest.getNormal().dot(halfVector);
+
+            //Specular component using Blinn-Phong model
+            if (NdotH > 0) {
+                double spec = Math.pow(NdotH, mat.getShininess());
+                r += lc.getRed()   * intensity * spec * mat.getSpecular() * attenuation;
+                g += lc.getGreen() * intensity * spec * mat.getSpecular() * attenuation;
+                b += lc.getBlue()  * intensity * spec * mat.getSpecular() * attenuation;
+            }
         }
 
         // Clamp the color values to the range [0, 1]
