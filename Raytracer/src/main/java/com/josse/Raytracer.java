@@ -3,6 +3,7 @@ package com.josse;
 import com.josse.lights.Light;
 import com.josse.lights.PointLight;
 import com.josse.objects.Camera;
+import com.josse.objects.Circle;
 import com.josse.objects.Model3D;
 import com.josse.objects.Object3D;
 import com.josse.objects.Sphere;
@@ -24,7 +25,7 @@ import javafx.stage.Stage;
 public class Raytracer extends Application {
 
     private static final int WIDTH = 1200;
-    private static final int HEIGHT = 800;
+    private static final int HEIGHT = 1200;
 
     @Override
     public void start(Stage primaryStage) {
@@ -44,9 +45,9 @@ public class Raytracer extends Application {
     }
 
     private Scene buildScene() {
-        Camera camera = new Camera(new Vector3D(0, 5, 14), 60.0, WIDTH, HEIGHT, 0.5, 100.0);
+        Camera camera = new Camera(new Vector3D(0, 5, 20), 60.0, WIDTH, HEIGHT, 0.5, 300.0);
 
-        Scene scene = new Scene(camera, Color.BLACK);
+        Scene scene = new Scene(camera, Color.LIGHTPINK);
 
         // Floor
         Vector3D fl0 = new Vector3D(-1000, -1.5,  50);
@@ -61,16 +62,27 @@ public class Raytracer extends Application {
         scene.addObject(floor2);
 
         //mirror
-        Vector3D ml0 = new Vector3D(-1000, -1.5,  -10);
-        Vector3D ml1 = new Vector3D( 1000, 1.5,  -10);
-        Vector3D ml2 = new Vector3D( 1000, 100, -10);
-        Vector3D ml3 = new Vector3D(-1000, 100, -10);
+        Vector3D ml0 = new Vector3D(-15, -1.5,  -6);
+        Vector3D ml1 = new Vector3D( -5, -1.5,  -10);
+        Vector3D ml2 = new Vector3D( -5, 10, -10);
+        Vector3D ml3 = new Vector3D(-15, 10, -6);
         Triangle mirror1 = new Triangle(ml0, ml1, ml2, Color.LIGHTGRAY);
         Triangle mirror2 = new Triangle(ml0, ml2, ml3, Color.LIGHTGRAY);
         mirror1.setMaterial(new Material(0.02, 0.05, 0.9, 128, 0.92, 0.0, 1.0));
         mirror2.setMaterial(new Material(0.02, 0.05, 0.9, 128, 0.92, 0.0, 1.0));
-        //scene.addObject(mirror1);
-        //scene.addObject(mirror2);
+        scene.addObject(mirror1);
+        scene.addObject(mirror2);
+
+        Vector3D m0 = new Vector3D(15, -1.5,  -6);
+        Vector3D m1 = new Vector3D( 5, -1.5,  -10);
+        Vector3D m2 = new Vector3D( 5, 10, -10);
+        Vector3D m3 = new Vector3D(15, 10, -6);
+        Triangle mirror3 = new Triangle(m0, m1, m2, Color.LIGHTGRAY);
+        Triangle mirror4 = new Triangle(m0, m2, m3, Color.LIGHTGRAY);
+        mirror3.setMaterial(new Material(0.02, 0.05, 0.9, 128, 0.92, 0.0, 1.0));
+        mirror4.setMaterial(new Material(0.02, 0.05, 0.9, 128, 0.92, 0.0, 1.0));
+        scene.addObject(mirror3);
+        scene.addObject(mirror4);
 
 
         // Statue — center back
@@ -78,34 +90,30 @@ public class Raytracer extends Application {
         model.setMaterial(new Material(0.02, 0.4, 0.4, 64, 0.3, 0.0, 1.0));
         scene.addObject(model);
 
-        // LEFT mirror sphere — faces the right sphere; camera sees right sphere
-        // reflected in it, which reflects left sphere back = 2+ bounces
+        // LEFT mirror emerald — faces the right sphere; camera sees right sphere
         Model3D leftMirror = ObjReader.loadModel("Resources/Emeraldobj1.obj", Color.WHITE, new Vector3D(-6, -1.5, -4), 0.03);
         leftMirror.setMaterial(new Material(0.02, 0.05, 0.9, 128, 0.92, 0.0, 1.0));
         scene.addObject(leftMirror);
 
-        // RIGHT mirror sphere — symmetric partner, creates the hall-of-mirrors bounce
+        // RIGHT mirror emerald — symmetric partner, creates the hall-of-mirrors bounce
         Model3D rightMirror = ObjReader.loadModel("Resources/Emeraldobj1.obj", Color.WHITE, new Vector3D(6, -1.5, -4), 0.03);
         rightMirror.setMaterial(new Material(0.02, 0.05, 0.9, 128, 0.92, 0.0, 1.0));
         scene.addObject(rightMirror);
 
-        // Glass sphere in front of the statue — IOR 1.5 bends rays so the statue
+        // Glass heart in front of the statue — IOR 1.5 bends rays so the statue
         // appears distorted and inverted through it (clearly shows refraction)
-        Sphere glass = new Sphere(new Vector3D(0, 0.5, 0), 2.0, Color.WHITE);
-        glass.setMaterial(new Material(0.02, 0.02, 0.9, 128, 0.0, 0.9, 1.5));
-        scene.addObject(glass);
+        Model3D glassModel = ObjReader.loadModel("Resources/heart.obj", Color.WHITE, new Vector3D(0, 1, 2), 1.3);
+        glassModel.setMaterial(new Material(0.02, 0.02, 0.9, 128, 0.0, 0.9, 1.7));
+        scene.addObject(glassModel);
 
-        // Colorful matte balls — give the mirror spheres interesting content to reflect
-        Sphere redBall = new Sphere(new Vector3D(-8, 0, -5), 1.5, Color.TOMATO);
-        redBall.setMaterial(new Material(0.1, 0.9, 0.1, 8, 0.0, 0.0, 1.0));
-        //scene.addObject(redBall);
-
-        Sphere goldBall = new Sphere(new Vector3D(8, 0, -5), 1.5, Color.GOLD);
-        goldBall.setMaterial(new Material(0.1, 0.9, 0.1, 8, 0.0, 0.0, 1.0));
-        //scene.addObject(goldBall);
+        // Big backdrop circle — behind all objects, facing the camera
+        Circle backdrop = new Circle(new Vector3D(0, 4, -70), 50.0, new Vector3D(0, 0, 1), Color.LIGHTBLUE);
+        backdrop.setMaterial(new Material(0.1, 0.8, 0.2, 128, 0, 0.0, 1.0));
+        scene.addObject(backdrop);
 
         // Main overhead point light
-        scene.addLight(new PointLight(new Vector3D(0, 8, 5), Color.WHITE, 40));
+        scene.addLight(new PointLight(new Vector3D(0, 20, 5), Color.WHITE, 40));
+        scene.addLight(new PointLight(new Vector3D(0, 20, -5), Color.PURPLE, 50));
         // Fill from the left so shadow sides aren't pitch black
         scene.addLight(new PointLight(new Vector3D(-6, 6, 8), Color.WHITE, 20));
 
@@ -124,7 +132,7 @@ public class Raytracer extends Application {
         for (int y = 0; y < h; y++) {
             for (int x = 0; x < w; x++) {
                 Ray ray = camera.generateRay(x, y);
-                Color color = trace(ray, scene, camera.getNear(), camera.getFar(), 4);
+                Color color = trace(ray, scene, camera.getNear(), camera.getFar(), 5);
                 pw.setColor(x, y, color);
             }
             int filled = (y + 1) * barWidth / h;
