@@ -1,14 +1,15 @@
 package com.josse;
 
-import com.josse.lights.DirectionalLight;
 import com.josse.lights.Light;
 import com.josse.lights.PointLight;
 import com.josse.objects.Camera;
+import com.josse.objects.Model3D;
 import com.josse.objects.Object3D;
 import com.josse.objects.Sphere;
 import com.josse.objects.Triangle;
 import com.josse.tools.Intersection;
 import com.josse.tools.Material;
+import com.josse.tools.ObjReader;
 import com.josse.tools.Ray;
 import com.josse.tools.Vector3D;
 
@@ -36,60 +37,77 @@ public class Raytracer extends Application {
 
         javafx.scene.Scene fxScene = new javafx.scene.Scene(root, WIDTH, HEIGHT, Color.BLACK);
 
-        primaryStage.setTitle("Raytracer v1.1");
+        primaryStage.setTitle("Raytracer v1.3");
         primaryStage.setScene(fxScene);
         primaryStage.setResizable(false);
         primaryStage.show();
     }
 
     private Scene buildScene() {
-        Camera camera = new Camera(new Vector3D(0, 3, 14), 60.0, WIDTH, HEIGHT, 0.5, 100.0);
+        Camera camera = new Camera(new Vector3D(0, 5, 14), 60.0, WIDTH, HEIGHT, 0.5, 100.0);
 
-        Scene scene = new Scene(camera, Color.PINK);
+        Scene scene = new Scene(camera, Color.BLACK);
 
-        // Floor — flat at y=-1.5, spans the full scene
-        Vector3D fl0 = new Vector3D(-50, -1.5,  12);
-        Vector3D fl1 = new Vector3D( 50, -1.5,  12);
-        Vector3D fl2 = new Vector3D( 50, -1.5,  -7);
-        Vector3D fl3 = new Vector3D(-50, -1.5,  -7);
-        Triangle floor1 = new Triangle(fl0, fl1, fl2, Color.DARKGRAY);
-        Triangle floor2 = new Triangle(fl0, fl2, fl3, Color.DARKGRAY);
+        // Floor
+        Vector3D fl0 = new Vector3D(-1000, -1.5,  50);
+        Vector3D fl1 = new Vector3D( 1000, -1.5,  50);
+        Vector3D fl2 = new Vector3D( 1000, -1.5, -70);
+        Vector3D fl3 = new Vector3D(-1000, -1.5, -70);
+        Triangle floor1 = new Triangle(fl0, fl1, fl2, Color.LIGHTGRAY);
+        Triangle floor2 = new Triangle(fl0, fl2, fl3, Color.LIGHTGRAY);
         floor1.setMaterial(new Material(0.05, 0.8, 0.1, 8, 0.0, 0.0, 1.0));
         floor2.setMaterial(new Material(0.05, 0.8, 0.1, 8, 0.0, 0.0, 1.0));
         scene.addObject(floor1);
         scene.addObject(floor2);
 
-        // Mirror back wall — vertical, behind the spheres at z=-6, facing the camera
-        Vector3D wl0 = new Vector3D(-10, -1.5, -6);
-        Vector3D wl1 = new Vector3D( 10, -1.5, -6);
-        Vector3D wl2 = new Vector3D( 10,  8.0, -6);
-        Vector3D wl3 = new Vector3D(-10,  8.0, -6);
-        Triangle wall1 = new Triangle(wl0, wl1, wl2, Color.WHITE);
-        Triangle wall2 = new Triangle(wl0, wl2, wl3, Color.WHITE);
-        wall1.setMaterial(new Material(0.0, 0.05, 0.0, 1, 1, 0.0, 1.0));
-        wall2.setMaterial(new Material(0.0, 0.05, 0.0, 1, 1, 0.0, 1.0));
-        scene.addObject(wall1);
-        scene.addObject(wall2);
+        //mirror
+        Vector3D ml0 = new Vector3D(-1000, -1.5,  -10);
+        Vector3D ml1 = new Vector3D( 1000, 1.5,  -10);
+        Vector3D ml2 = new Vector3D( 1000, 100, -10);
+        Vector3D ml3 = new Vector3D(-1000, 100, -10);
+        Triangle mirror1 = new Triangle(ml0, ml1, ml2, Color.LIGHTGRAY);
+        Triangle mirror2 = new Triangle(ml0, ml2, ml3, Color.LIGHTGRAY);
+        mirror1.setMaterial(new Material(0.02, 0.05, 0.9, 128, 0.92, 0.0, 1.0));
+        mirror2.setMaterial(new Material(0.02, 0.05, 0.9, 128, 0.92, 0.0, 1.0));
+        //scene.addObject(mirror1);
+        //scene.addObject(mirror2);
 
-        // LEFT — mirror sphere, reflects the scene around it
-        Sphere mirror = new Sphere(new Vector3D(-4, 0, 0), 1.5, Color.WHITE);
-        mirror.setMaterial(new Material(0.02, 0.05, 0.5, 64, 0.85, 0.0, 1.0));
-        scene.addObject(mirror);
 
-        // CENTER — broad specular glow, no reflection
-        Sphere medium = new Sphere(new Vector3D(0, 0, 0), 1.5, Color.WHITE);
-        medium.setMaterial(new Material(0.05, 0.7, 0.9, 16, 0.0, 0.0, 1.0));
-        scene.addObject(medium);
+        // Statue — center back
+        Model3D model = ObjReader.loadModel("Resources/Stephan_C.obj", Color.LIGHTBLUE, new Vector3D(0, -1.5, -5));
+        model.setMaterial(new Material(0.02, 0.4, 0.4, 64, 0.3, 0.0, 1.0));
+        scene.addObject(model);
 
-        // RIGHT — matte red, diffuse only
-        Sphere matte = new Sphere(new Vector3D(4, 0, 0), 1.5, Color.TOMATO);
-        matte.setMaterial(new Material(0.05, 0.9, 0.0, 1, 0.0, 0.0, 1.0));
-        scene.addObject(matte);
+        // LEFT mirror sphere — faces the right sphere; camera sees right sphere
+        // reflected in it, which reflects left sphere back = 2+ bounces
+        Model3D leftMirror = ObjReader.loadModel("Resources/Emeraldobj1.obj", Color.WHITE, new Vector3D(-6, -1.5, -4), 0.03);
+        leftMirror.setMaterial(new Material(0.02, 0.05, 0.9, 128, 0.92, 0.0, 1.0));
+        scene.addObject(leftMirror);
 
-        // Main white point light — upper-left, primary source of highlights
-        scene.addLight(new PointLight(new Vector3D(-2, 6, 8), Color.WHITE, 25));
-        // Soft fill — dim directional from the right, lifts shadow sides
-        scene.addLight(new DirectionalLight(new Vector3D(1.0, -0.3, -0.5), Color.WHITE, 0.15));
+        // RIGHT mirror sphere — symmetric partner, creates the hall-of-mirrors bounce
+        Model3D rightMirror = ObjReader.loadModel("Resources/Emeraldobj1.obj", Color.WHITE, new Vector3D(6, -1.5, -4), 0.03);
+        rightMirror.setMaterial(new Material(0.02, 0.05, 0.9, 128, 0.92, 0.0, 1.0));
+        scene.addObject(rightMirror);
+
+        // Glass sphere in front of the statue — IOR 1.5 bends rays so the statue
+        // appears distorted and inverted through it (clearly shows refraction)
+        Sphere glass = new Sphere(new Vector3D(0, 0.5, 0), 2.0, Color.WHITE);
+        glass.setMaterial(new Material(0.02, 0.02, 0.9, 128, 0.0, 0.9, 1.5));
+        scene.addObject(glass);
+
+        // Colorful matte balls — give the mirror spheres interesting content to reflect
+        Sphere redBall = new Sphere(new Vector3D(-8, 0, -5), 1.5, Color.TOMATO);
+        redBall.setMaterial(new Material(0.1, 0.9, 0.1, 8, 0.0, 0.0, 1.0));
+        //scene.addObject(redBall);
+
+        Sphere goldBall = new Sphere(new Vector3D(8, 0, -5), 1.5, Color.GOLD);
+        goldBall.setMaterial(new Material(0.1, 0.9, 0.1, 8, 0.0, 0.0, 1.0));
+        //scene.addObject(goldBall);
+
+        // Main overhead point light
+        scene.addLight(new PointLight(new Vector3D(0, 8, 5), Color.WHITE, 40));
+        // Fill from the left so shadow sides aren't pitch black
+        scene.addLight(new PointLight(new Vector3D(-6, 6, 8), Color.WHITE, 20));
 
         return scene;
     }

@@ -13,11 +13,19 @@ import javafx.scene.paint.Color;
 
 public class ObjReader {
         public static Model3D loadModel(String path, Color color, Vector3D position) {
-            List<Triangle> triangles = loadTriangles(path, color);
+            return loadModel(path, color, position, 1.0);
+        }
+
+        public static Model3D loadModel(String path, Color color, Vector3D position, double scale) {
+            List<Triangle> triangles = loadTriangles(path, color, position, scale);
             return new Model3D(triangles, color, position);
         }
 
-        private static List<Triangle> loadTriangles(String path, Color color) {
+        private static List<Triangle> loadTriangles(String path, Color color, Vector3D position) {
+            return loadTriangles(path, color, position, 1.0);
+        }
+
+        private static List<Triangle> loadTriangles(String path, Color color, Vector3D position, double scale) {
             List<Vector3D> vertices = new ArrayList<>();
             List<Vector3D> normals = new ArrayList<>();
             List<Triangle> triangles = new ArrayList<>();
@@ -26,9 +34,9 @@ public class ObjReader {
                 while ((linea = br.readLine()) != null) {
                     if (linea.startsWith("v ")) {
                         String[] partes = linea.split("\\s+");
-                        double x = Double.parseDouble(partes[1]);
-                        double y = Double.parseDouble(partes[2]);
-                        double z = Double.parseDouble(partes[3]);
+                        double x = Double.parseDouble(partes[1]) * scale + position.getX();
+                        double y = Double.parseDouble(partes[2]) * scale + position.getY();
+                        double z = Double.parseDouble(partes[3]) * scale + position.getZ();
                         vertices.add(new Vector3D(x, y, z));
                     }
                     else if(linea.startsWith("vn ")){
