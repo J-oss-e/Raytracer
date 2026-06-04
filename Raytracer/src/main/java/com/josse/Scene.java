@@ -9,6 +9,7 @@ import com.josse.objects.Object3D;
 
 import javafx.scene.paint.Color;
 
+// Holds all scene data: 3D objects, lights, camera, and background color.
 public class Scene {
 
     private List<Object3D> objects;

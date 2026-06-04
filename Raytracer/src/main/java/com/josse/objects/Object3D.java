@@ -8,6 +8,7 @@ import com.josse.tools.Vector3D;
 
 import javafx.scene.paint.Color;
 
+// Abstract base for all renderable 3D objects. Every object must implement ray intersection and bounding box.
 public abstract class Object3D {
 
     protected Vector3D position;

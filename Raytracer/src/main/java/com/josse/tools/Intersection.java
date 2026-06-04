@@ -2,6 +2,7 @@ package com.josse.tools;
 
 import com.josse.objects.Object3D;
 
+// Result of a ray-object test. Stores whether it hit, the distance (t), hit point, surface normal, and the object.
 public class Intersection {
 
     private boolean hit;

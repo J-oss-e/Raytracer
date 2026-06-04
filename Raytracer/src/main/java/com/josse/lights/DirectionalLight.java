@@ -5,6 +5,7 @@ import com.josse.tools.Vector3D;
 
 import javafx.scene.paint.Color;
 
+// Parallel-ray light from a fixed direction (like the sun). No distance attenuation.
 public class DirectionalLight extends Light {
 
     private Vector3D direction;
@@ -21,6 +22,7 @@ public class DirectionalLight extends Light {
         return direction.scale(-1);
     }
 
+    // Lambert shading term: dot product of the surface normal and the light direction.
     @Override
     public double getNDotL(Intersection intersection) {
         Vector3D lightDir = getDirectionOfLight(intersection.getPoint());

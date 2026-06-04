@@ -11,6 +11,7 @@ import com.josse.objects.Triangle;
 
 import javafx.scene.paint.Color;
 
+// Reads Wavefront .obj files and creates Model3D objects. Handles scale, XYZ rotation, and quad faces.
 public class ObjReader {
         public static Model3D loadModel(String path, Color color, Vector3D position) {
             return loadModel(path, color, position, 1.0, 0, 0, 0);
@@ -20,12 +21,14 @@ public class ObjReader {
             return loadModel(path, color, position, scale, 0, 0, 0);
         }
 
+        // Loads a model with full control over scale and XYZ rotation (angles in radians).
         public static Model3D loadModel(String path, Color color, Vector3D position, double scale,
                                         double rotX, double rotY, double rotZ) {
             List<Triangle> triangles = loadTriangles(path, color, position, scale, rotX, rotY, rotZ);
             return new Model3D(triangles, color, position);
         }
 
+        // Applies X-axis, then Y-axis, then Z-axis rotation (in radians) to a vertex.
         private static Vector3D rotateVertex(Vector3D v, double rx, double ry, double rz) {
             double x = v.getX(), y = v.getY(), z = v.getZ();
             // X-axis rotation
@@ -43,6 +46,7 @@ public class ObjReader {
             return new Vector3D(x3, y3, z2);
         }
 
+        // Main parsing logic: reads the .obj file line by line and builds a list of triangles with applied scale and rotation.
         private static List<Triangle> loadTriangles(String path, Color color, Vector3D position, double scale,
                                                      double rotX, double rotY, double rotZ) {
             List<Vector3D> vertices = new ArrayList<>();
@@ -50,6 +54,7 @@ public class ObjReader {
             List<Triangle> triangles = new ArrayList<>();
             try (BufferedReader br = new BufferedReader(new FileReader(path))) {
                 String linea;
+                // Read each line: 'v' = vertex, 'vn' = normal, 'f' = face (triangle or quad).
                 while ((linea = br.readLine()) != null) {
                     if (linea.startsWith("v ")) {
                         String[] partes = linea.split("\\s+");

@@ -5,6 +5,7 @@ import com.josse.tools.Vector3D;
 
 import javafx.scene.paint.Color;
 
+// Abstract light source. Subclasses define direction, shadow distance, and distance attenuation.
 public abstract class Light {
 
     private Color color;

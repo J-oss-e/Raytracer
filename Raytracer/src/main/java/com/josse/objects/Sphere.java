@@ -7,6 +7,7 @@ import com.josse.tools.Vector3D;
 
 import javafx.scene.paint.Color;
 
+// A sphere defined by its center position and radius.
 public class Sphere extends Object3D {
 
     private double radius;
@@ -21,6 +22,7 @@ public class Sphere extends Object3D {
         this.radius = radius;
     }
 
+    // Ray-sphere intersection using the geometric formula. Tests if the ray hits the sphere and finds the closest entry point.
     @Override
     public Intersection getIntersection(Ray ray) {
         Vector3D L = this.position.subtract(ray.getOrigin());
@@ -46,6 +48,7 @@ public class Sphere extends Object3D {
         return new Intersection(true, t0, hitPoint, this, normal);
     }
 
+    // Returns an AABB that exactly encloses the sphere: center ± radius on each axis.
     @Override
     public AABB getBoundingBox() {
         Vector3D min = new Vector3D(position.x - radius, position.y - radius, position.z - radius);

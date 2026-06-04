@@ -1,6 +1,7 @@
 package com.josse.tools;
 
 
+// Axis-aligned bounding box. Used in the BVH to cheaply reject rays before testing actual geometry.
 public class AABB {
     public Vector3D min;
     public Vector3D max;
@@ -11,7 +12,9 @@ public class AABB {
     }
 
 
+    // Slab test: intersects the ray with each axis pair and checks if all three overlap. Fast rejection for BVH traversal.
     public boolean intersect(Ray ray, double tMin, double tMax) {
+        // Check the ray against each axis slab (X=0, Y=1, Z=2). If any axis fails, the ray misses the box.
         for (int a = 0; a < 3; a++) {
             double invD = 1.0 / ray.getDirection().get(a);
             double t0 = (min.get(a) - ray.getOrigin().get(a)) * invD;
@@ -30,6 +33,7 @@ public class AABB {
         return true;
     }
 
+    // Returns the smallest AABB that contains both this box and other.
     public AABB union(AABB other) {
         double minX = Math.min(this.min.x, other.min.x);
         double minY = Math.min(this.min.y, other.min.y);
@@ -40,6 +44,7 @@ public class AABB {
         return new AABB(new Vector3D(minX, minY, minZ), new Vector3D(maxX, maxY, maxZ));
     }
 
+    // Returns the center point of the box. Used to sort triangles when choosing a BVH split.
     public Vector3D centroid() {
         return new Vector3D(
             (min.x + max.x) / 2.0,

@@ -7,6 +7,7 @@ import com.josse.tools.Vector3D;
 
 import javafx.scene.paint.Color;
 
+// Triangle primitive. Uses Möller-Trumbore intersection. Supports per-vertex normals for smooth shading.
 public class Triangle extends Object3D{
 
     private static final double EPSILON = 1e-8;
@@ -38,6 +39,7 @@ public class Triangle extends Object3D{
         this.n2 = n2;
     }
 
+    // Returns the geometric center of the triangle. Used as its world position in the scene.
     private static Vector3D centroid(Vector3D a, Vector3D b, Vector3D c) {
         return new Vector3D(
             (a.x + b.x + c.x) / 3.0,
@@ -94,6 +96,7 @@ public class Triangle extends Object3D{
         return new Intersection(true, t, hitPoint, this, normal);
     }
 
+    // Returns a slightly padded AABB enclosing all three vertices. The padding prevents degenerate flat boxes.
     @Override
     public AABB getBoundingBox() {
         final double PAD = 1e-4;

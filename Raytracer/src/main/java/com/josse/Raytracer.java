@@ -28,11 +28,13 @@ import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
+// Main JavaFX application. Builds the scene, renders it pixel by pixel, and displays the result.
 public class Raytracer extends Application {
 
     private static final int WIDTH = 1920;
     private static final int HEIGHT = 1080;
 
+    // JavaFX entry point: builds the scene, renders it, saves to PNG, and opens the display window.
     @Override
     public void start(Stage primaryStage) {
         Scene world = buildScene();
@@ -52,6 +54,7 @@ public class Raytracer extends Application {
         primaryStage.show();
     }
 
+    // Sets up all geometry, materials, and lights that make up the current scene.
     private Scene buildScene() {
         Camera camera = new Camera(new Vector3D(0, 10, 0), new Vector3D(0, 10, -10), 60.0, WIDTH, HEIGHT, 0.5, 300.0);
 
@@ -132,6 +135,7 @@ public class Raytracer extends Application {
         return scene;
     }
 
+    // Renders the full scene: iterates every pixel, traces a ray, and writes the result color to the image.
     private WritableImage render(Scene scene) {
         Camera camera = scene.getCamera();
         int w = camera.getWidth();
@@ -141,6 +145,7 @@ public class Raytracer extends Application {
         PixelWriter pw = image.getPixelWriter();
 
         int barWidth = 40;
+        // Iterate every row and column; trace one ray per pixel.
         for (int y = 0; y < h; y++) {
             for (int x = 0; x < w; x++) {
                 Ray ray = camera.generateRay(x, y);
@@ -192,6 +197,7 @@ public class Raytracer extends Application {
         return shadowHit.isHit(); 
     }
 
+    // Computes the final pixel color using ambient + Blinn-Phong shading, then adds reflection and refraction.
     private Color shade(Intersection closest, Ray ray, Scene scene, int depth) {
         //If it doesn't hit anything, return the background color
         if (!closest.isHit()) {
@@ -209,6 +215,7 @@ public class Raytracer extends Application {
         //View direction is the opposite of the ray direction
         Vector3D viewDir = ray.getDirection().scale(-1);
 
+        // Accumulate the contribution of each light source that is not blocked by another object.
         for (Light light : scene.getLights()) {
 
             if(isInShadow(closest.getPoint(), closest.getNormal(), light, scene)) continue;
@@ -291,6 +298,7 @@ public class Raytracer extends Application {
         return new Color(r, g, b, 1.0);
     }
 
+    // Saves the rendered JavaFX image as a PNG file to disk.
     private void savePng(WritableImage image, String filename) {
         try {
             BufferedImage buf = SwingFXUtils.fromFXImage(image, null);

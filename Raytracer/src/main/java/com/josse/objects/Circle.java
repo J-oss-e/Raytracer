@@ -7,6 +7,7 @@ import com.josse.tools.Vector3D;
 
 import javafx.scene.paint.Color;
 
+// A flat disk defined by its center, radius, and plane normal.
 public class Circle extends Object3D {
 
     private double radius;
@@ -24,6 +25,7 @@ public class Circle extends Object3D {
         this.normal = normal.normalize();
     }
 
+    // Find where the ray crosses the disk's plane, then check if that point is within the radius.
     @Override
     public Intersection getIntersection(Ray ray) {
         double denom = normal.dot(ray.getDirection());
@@ -41,6 +43,7 @@ public class Circle extends Object3D {
         return new Intersection(true, t, hitPoint, this, outNormal);
     }
 
+    // Returns the tightest AABB around the disk based on how the normal tilts it on each axis.
     @Override
     public AABB getBoundingBox() {
         // per-axis half-extent of the disk: r * sqrt(1 - n_i^2)

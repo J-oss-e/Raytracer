@@ -1,5 +1,6 @@
 package com.josse.tools;
 
+// A ray defined by an origin point and a normalized direction. Used to probe the scene for intersections.
 public class Ray {
 
     private Vector3D origin;
@@ -15,6 +16,7 @@ public class Ray {
         this.direction = direction.normalize();
     }
 
+    // Returns the 3D point along the ray at distance t: origin + direction * t.
     public Vector3D pointAt(double t) {
         return origin.add(direction.scale(t));
     }

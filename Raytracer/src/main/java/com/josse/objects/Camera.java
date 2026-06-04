@@ -3,6 +3,7 @@ package com.josse.objects;
 import com.josse.tools.Ray;
 import com.josse.tools.Vector3D;
 
+// Perspective camera. Generates one ray per pixel using a configurable field of view and look-at direction.
 public class Camera {
 
     private Vector3D position;
@@ -60,6 +61,7 @@ public class Camera {
         camUp      = camRight.cross(camForward).normalize();
     }
 
+    // Converts pixel coordinates (x, y) to a 3D ray through the scene in world space.
     public Ray generateRay(int x, int y) {
         double aspect = (double) width / (double) height;
         double scale  = Math.tan(Math.toRadians(fov) * 0.5);

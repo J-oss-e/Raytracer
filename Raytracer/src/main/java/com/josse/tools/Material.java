@@ -1,5 +1,6 @@
 package com.josse.tools;
 
+// Surface optical properties used in Blinn-Phong shading, reflection, and refraction.
 public class Material {
     public double ambient;
     public double diffuse;
