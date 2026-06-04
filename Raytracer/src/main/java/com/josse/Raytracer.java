@@ -31,7 +31,7 @@ import javafx.stage.Stage;
 public class Raytracer extends Application {
 
     private static final int WIDTH = 1920;
-    private static final int HEIGHT = 1420;
+    private static final int HEIGHT = 1080;
 
     @Override
     public void start(Stage primaryStage) {
@@ -39,7 +39,7 @@ public class Raytracer extends Application {
 
         WritableImage image = render(world);
 
-        savePng(image, "Love.png");
+        savePng(image, "DeathSpace.png");
 
         ImageView view = new ImageView(image);
         Group root = new Group(view);
@@ -53,9 +53,9 @@ public class Raytracer extends Application {
     }
 
     private Scene buildScene() {
-        Camera camera = new Camera(new Vector3D(0, 2, 14), new Vector3D(0, 10, -10), 60.0, WIDTH, HEIGHT, 0.5, 300.0);
+        Camera camera = new Camera(new Vector3D(0, 10, 0), new Vector3D(0, 10, -10), 60.0, WIDTH, HEIGHT, 0.5, 300.0);
 
-        Scene scene = new Scene(camera, Color.GRAY);
+        Scene scene = new Scene(camera, Color.BLACK);
 
         // Floor
         Vector3D fl0 = new Vector3D(-1000, -1.5,  50);
@@ -64,16 +64,16 @@ public class Raytracer extends Application {
         Vector3D fl3 = new Vector3D(-1000, -1.5, -70);
         Triangle floor1 = new Triangle(fl0, fl1, fl2, Color.LIGHTGRAY);
         Triangle floor2 = new Triangle(fl0, fl2, fl3, Color.LIGHTGRAY);
-        floor1.setMaterial(new Material(0.05, 0.8, 0.1, 8, 0, 0.0, 1.0));
-        floor2.setMaterial(new Material(0.05, 0.8, 0.1, 8, 0, 0.0, 1.0));
-        scene.addObject(floor1);
-        scene.addObject(floor2);
+        floor1.setMaterial(new Material(0.05, 0.8, 0.1, 8, 0.0, 0.0, 1.0));
+        floor2.setMaterial(new Material(0.05, 0.8, 0.1, 8, 0.0, 0.0, 1.0));
+        //scene.addObject(floor1);
+        //scene.addObject(floor2);
 
         //mirror
-        Vector3D ml0 = new Vector3D(-15, -2,  -35);
-        Vector3D ml1 = new Vector3D( 0, -2,  -40);
-        Vector3D ml2 = new Vector3D( 0, 15, -40);
-        Vector3D ml3 = new Vector3D(-15, 15,  -35);
+        Vector3D ml0 = new Vector3D(-5, 3,  -15);
+        Vector3D ml1 = new Vector3D( 10, 3,  -15);
+        Vector3D ml2 = new Vector3D( 10, 14, -15);
+        Vector3D ml3 = new Vector3D(-5, 14, -15);
         Triangle mirror1 = new Triangle(ml0, ml1, ml2, Color.LIGHTGRAY);
         Triangle mirror2 = new Triangle(ml0, ml2, ml3, Color.LIGHTGRAY);
         mirror1.setMaterial(new Material(0.02, 0.05, 0.9, 128, 0.92, 0.0, 1.0));
@@ -81,48 +81,53 @@ public class Raytracer extends Application {
         scene.addObject(mirror1);
         scene.addObject(mirror2);
 
-        Vector3D ml4 = new Vector3D(15, -2,  -35);
-        Vector3D ml5 = new Vector3D( 0, -2,  -40);
-        Vector3D ml6 = new Vector3D( 0, 15, -40);
-        Vector3D ml7 = new Vector3D(15, 15,  -35);
-        Triangle mirror3 = new Triangle(ml4, ml5, ml6, Color.LIGHTGRAY);
-        Triangle mirror4 = new Triangle(ml4, ml6, ml7, Color.LIGHTGRAY);
-        mirror3.setMaterial(new Material(0.02, 0.05, 0.9, 128, 0.92, 0.0, 1.0));
-        mirror4.setMaterial(new Material(0.02, 0.05, 0.9, 128, 0.92, 0.0, 1.0));
-        scene.addObject(mirror3);
-        scene.addObject(mirror4);
+        //wall
+        Vector3D wl0 = new Vector3D(-7, 1,  -15.1);
+        Vector3D wl1 = new Vector3D( 12, 1,  -15.1);
+        Vector3D wl2 = new Vector3D( 12, 16, -15.1);
+        Vector3D wl3 = new Vector3D(-7, 16, -15.1);
+        Triangle wall1 = new Triangle(wl0, wl1, wl2, Color.web("#ffffff"));
+        Triangle wall2 = new Triangle(wl0, wl2, wl3, Color.web("#ffffff"));
+        wall1.setMaterial(new Material(0.02, 0.05, 0.9, 128, 0, 0.0, 1.0));
+        wall2.setMaterial(new Material(0.02, 0.05, 0.9, 128, 0, 0.0, 1.0));
+        scene.addObject(wall1);
+        scene.addObject(wall2);
 
-        Sphere sphere = new Sphere(new Vector3D(0, 11, -10), 6.0, Color.PURPLE);
-        sphere.setMaterial(new Material(0.02, 0.4, 0.4, 128, 0, 0.6, 1.5));
-        scene.addObject(sphere);
 
-        Model3D model = ObjReader.loadModel("Resources/Statue of Liberty - Bombed.obj", Color.WHITE, new Vector3D(-5, -1.5, 17));
-        model.setMaterial(new Material(0.02, 0.4, 0.4, 128, 0, 0.3, 1.0));
-        //scene.addObject(model);
+        Model3D model = ObjReader.loadModel("Resources/spaceman_Posezero.obj", Color.WHITE, new Vector3D(50, -125, 40), 5, Math.toRadians(270), Math.toRadians(180), 0);
+        model.setMaterial(new Material(0.02, 0.02, 0.9, 128, 0.8, 0, 1 ));
+        scene.addObject(model);
 
-        Model3D meltingHeart = ObjReader.loadModel("Resources/melting-heart.obj", Color.RED, new Vector3D(0, 5.5, -10), 0.6, 0, Math.toRadians(270), 0);
-        meltingHeart.setMaterial(new Material(0.02, 0.05, 0.9, 128, 0, 0.0, 1.0));
-        scene.addObject(meltingHeart);
+        Model3D skull = ObjReader.loadModel("Resources/Skull in Astronaut Helmet.obj", Color.WHITE, new Vector3D(-17, 13, -25), 8, 0, Math.toRadians(-30), 0);
+        skull.setMaterial(new Material(0.02, 0.02, 0.9, 128, 0, 0, 1 ));
+        scene.addObject(skull);
 
-        Model3D meltingHead = ObjReader.loadModel("Resources/4b9ad10c4aed42699e869ce25a7c8772.obj", Color.WHITE, new Vector3D(13, -6, -14), 3.5, 0, 0, 0);
-        meltingHead.setMaterial(new Material(0.02, 0.05, 0.9, 128, 0.9, 0.0, 1.0));
-        scene.addObject(meltingHead);
+        Sphere bubble = new Sphere(new Vector3D(-17, 15, -25), 5, Color.web("#a60000"));
+        bubble.setMaterial(new Material(0.02, 0.4, 0.4, 128, 0, 0.8, 1.4));
+        scene.addObject(bubble);
 
-        Model3D meltingMan = ObjReader.loadModel("Resources/efffeff91cc54531bc4a3beffcf4216e.obj", Color.BLUE, new Vector3D(-14, 5, -14), 4, 0, 0, 0);
-        meltingMan.setMaterial(new Material(0.02, 0.05, 0.9, 128, 0.92, 0.0, 1.0));
-        scene.addObject(meltingMan);
 
-        Model3D heart = ObjReader.loadModel("Resources/heart.obj", Color.RED, new Vector3D(0, 11, -14), 0.75);
-        heart.setMaterial(new Material(0.02, 0.4, 0.4, 128, 0.3, 0.0, 1.0));
-        //scene.addObject(heart);
+        Model3D skull2 = ObjReader.loadModel("Resources/Skull in Astronaut Helmet.obj", Color.WHITE, new Vector3D(-20, 2, -20), 8, 0, Math.toRadians(-30), Math.toRadians(10));
+        skull2.setMaterial(new Material(0.02, 0.02, 0.9, 128, 0, 0, 1 ));
+        scene.addObject(skull2);
 
-        Circle backdrop = new Circle(new Vector3D(0, 4, -70), 50.0, new Vector3D(0, 0, 1), Color.WHITE);
+        Sphere bubble2 = new Sphere(new Vector3D(-20, 4, -20), 5, Color.web("#a60000"));
+        bubble2.setMaterial(new Material(0.02, 0.4, 0.4, 128, 0, 0.8, 1.4));
+        scene.addObject(bubble2);
+
+
+        Circle backdrop = new Circle(new Vector3D(17, -70, 70), 80.0, new Vector3D(0, 0, 1), Color.WHITE);
         backdrop.setMaterial(new Material(0.1, 0.8, 0.2, 128, 0, 0.0, 1.0));
-        //scene.addObject(backdrop);
+        scene.addObject(backdrop);
 
-        scene.addLight(new PointLight(new Vector3D(0, 30, -15), Color.WHITE, 100));
-        scene.addLight(new PointLight(new Vector3D(5, 8, -10), Color.RED, 70));
-        scene.addLight(new DirectionalLight(new Vector3D(-6, 6, 8), Color.WHITE, 20));
+        Sphere star = new Sphere(new Vector3D(10, 25, 50), 1, Color.YELLOW);
+        star.setMaterial(new Material(0.02, 0.4, 0.4, 128, 0.3, 0.0, 1.0));
+        scene.addObject(star);
+
+
+        scene.addLight(new PointLight(new Vector3D(0, 50, 5), Color.WHITE, 80));
+        scene.addLight(new PointLight(new Vector3D(10, 25, 45), Color.WHITE, 100));
+        //scene.addLight(new DirectionalLight(new Vector3D(-6, 6, 8), Color.PURPLE, 20));
 
         return scene;
     }
