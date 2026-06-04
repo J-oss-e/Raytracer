@@ -1,6 +1,7 @@
 package com.josse.tools;
 
-// 3D vector (or point). Used for positions, directions, and all math in the raytracer.
+// A 3D vector holds three numbers (X, Y, Z) that can represent a point in space, a direction, or a color.
+// Almost every value in the raytracer — positions, ray directions, surface normals — is a Vector3D.
 public class Vector3D {
 
     public double x;
@@ -36,12 +37,14 @@ public class Vector3D {
         return new Vector3D(this.x * s, this.y * s, this.z * s);
     }
 
-    // Dot product: measures how much two vectors align. Used in lighting angle calculations and intersection tests.
+    // Dot product: how much two directions agree. Returns 1 if they point the same way, 0 if perpendicular,
+    // -1 if opposite. Used to check how directly a light hits a surface or whether a ray faces a normal.
     public double dot(Vector3D v) {
         return this.x * v.x + this.y * v.y + this.z * v.z;
     }
 
-    // Cross product: returns a vector perpendicular to both this and v. Used for surface normals and building the camera basis.
+    // Cross product: returns a new direction that sticks straight out from the plane formed by both inputs —
+    // like a flagpole perpendicular to the ground. Used to find which way a surface faces and to set up the camera axes.
     public Vector3D cross(Vector3D v) {
         return new Vector3D(
             this.y * v.z - this.z * v.y,
@@ -58,7 +61,8 @@ public class Vector3D {
         return this.x * this.x + this.y * this.y + this.z * this.z;
     }
 
-    // Returns a unit-length copy of this vector. Returns a zero vector if length is zero to avoid division by zero.
+    // Rescales this vector to length 1, keeping only its direction — like saying "go north" instead of "run 5 meters north".
+    // Returns a zero vector if the input has no length (can't normalize nothing).
     public Vector3D normalize() {
         double len = length();
         if (len == 0.0) {

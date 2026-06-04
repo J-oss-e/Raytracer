@@ -65,8 +65,10 @@ public class Camera {
     public Ray generateRay(int x, int y) {
         double aspect = (double) width / (double) height;
         double scale  = Math.tan(Math.toRadians(fov) * 0.5);
+        // Convert the pixel's screen position to a point on an imaginary flat "film" in front of the camera.
+        // The aspect ratio keeps proportions correct; scale controls the zoom level (determined by FOV).
         double px = (2.0 * ((x + 0.5) / width)  - 1.0) * aspect * scale;
-        double py = (1.0 - 2.0 * ((y + 0.5) / height)) * scale;
+        double py = (1.0 - 2.0 * ((y + 0.5) / height)) * scale; // Y is flipped: screen-space down → world-space up
 
         // Map the pixel offset into world space using the camera basis
         Vector3D dir = camRight.scale(px)

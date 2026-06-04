@@ -197,7 +197,9 @@ public class Raytracer extends Application {
         return shadowHit.isHit(); 
     }
 
-    // Computes the final pixel color using ambient + Blinn-Phong shading, then adds reflection and refraction.
+    // Determines the final color of one pixel. Starts with a small base brightness (ambient), adds the
+    // contribution of every non-blocked light source, then recursively traces a mirror ray (reflection)
+    // and/or a glass ray (refraction) if the material calls for them.
     private Color shade(Intersection closest, Ray ray, Scene scene, int depth) {
         //If it doesn't hit anything, return the background color
         if (!closest.isHit()) {
@@ -249,8 +251,8 @@ public class Raytracer extends Application {
         if(mat.getReflectivity() > 0 && depth > 0){
             Vector3D d = ray.getDirection();
             Vector3D n = closest.getNormal();
-            Vector3D reflectDir = d.subtract(n.scale(2.0 * d.dot(n))).normalize();
-            Vector3D reflectOrigin = closest.getPoint().add(closest.getNormal().scale(1e-4));
+            Vector3D reflectDir = d.subtract(n.scale(2.0 * d.dot(n))).normalize(); // mirror bounce: flip the ray across the surface normal
+            Vector3D reflectOrigin = closest.getPoint().add(closest.getNormal().scale(1e-4)); // nudge off the surface so the reflected ray doesn't immediately re-hit it
             Ray reflectRay = new Ray(reflectOrigin, reflectDir);
             Color reflectColor = trace(reflectRay, scene, 1e-4, Double.POSITIVE_INFINITY, depth - 1);
             r = (1 - mat.getReflectivity()) * r + mat.getReflectivity() * reflectColor.getRed();
@@ -261,13 +263,13 @@ public class Raytracer extends Application {
         if(mat.getTransparency() > 0 && depth > 0){
             Vector3D d = ray.getDirection();
             Vector3D n = closest.getNormal();
-            boolean entering = d.dot(n) < 0;
+            boolean entering = d.dot(n) < 0; // ray and normal face opposite directions → entering the object
             Vector3D refractNormal = entering ? n : n.scale(-1);
-            double eta = entering ? (1.0 / mat.getIor()) : mat.getIor();
+            double eta = entering ? (1.0 / mat.getIor()) : mat.getIor(); // bending ratio between the two materials (Snell's law)
 
             double cosI = -d.dot(refractNormal);
             double sinT2 = eta * eta * (1.0 - cosI * cosI);
-            if (sinT2 <= 1.0) {
+            if (sinT2 <= 1.0) { // if sinT2 > 1, the angle is too shallow to exit — light bounces back instead
                 double cosT = Math.sqrt(1.0 - sinT2);
                 Vector3D refractDir = d.scale(eta).add(refractNormal.scale(eta * cosI - cosT)).normalize();
                 Vector3D refractOrigin = closest.getPoint().subtract(refractNormal.scale(1e-4));

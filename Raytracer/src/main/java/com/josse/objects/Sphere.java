@@ -25,18 +25,18 @@ public class Sphere extends Object3D {
     // Ray-sphere intersection using the geometric formula. Tests if the ray hits the sphere and finds the closest entry point.
     @Override
     public Intersection getIntersection(Ray ray) {
-        Vector3D L = this.position.subtract(ray.getOrigin());
+        Vector3D L = this.position.subtract(ray.getOrigin()); // vector from ray origin to sphere center
 
-        double tca = L.dot(ray.getDirection());
+        double tca = L.dot(ray.getDirection()); // closest approach along the ray to the center
         if (tca < 0) return new Intersection();
 
-        double d2 = L.dot(L) - tca * tca;
+        double d2 = L.dot(L) - tca * tca; // squared perpendicular distance from ray to sphere center
         double radius2 = radius * radius;
         if (d2 > radius2) return new Intersection();
 
-        double thc = Math.sqrt(radius2 - d2);
-        double t0 = tca - thc;
-        double t1 = tca + thc;
+        double thc = Math.sqrt(radius2 - d2); // half-chord length inside the sphere
+        double t0 = tca - thc; // entry distance (front of sphere)
+        double t1 = tca + thc; // exit distance (back of sphere)
 
         if (t0 < 0) {
             t0 = t1;

@@ -1,6 +1,7 @@
 package com.josse.tools;
 
-// A ray defined by an origin point and a normalized direction. Used to probe the scene for intersections.
+// A ray is like a laser beam: it starts at a point (origin) and travels in one straight direction.
+// The raytracer fires one ray per pixel and follows it to find what it hits.
 public class Ray {
 
     private Vector3D origin;

@@ -8,7 +8,8 @@ import com.josse.tools.Vector3D;
 
 import javafx.scene.paint.Color;
 
-// Abstract base for all renderable 3D objects. Every object must implement ray intersection and bounding box.
+// The blueprint every renderable object follows. All shapes (Sphere, Triangle, Model3D…) extend this and
+// must answer two questions: "does a given ray hit you?" and "what box fits tightly around you?".
 public abstract class Object3D {
 
     protected Vector3D position;

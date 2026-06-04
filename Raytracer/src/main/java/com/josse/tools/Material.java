@@ -1,6 +1,8 @@
 package com.josse.tools;
 
-// Surface optical properties used in Blinn-Phong shading, reflection, and refraction.
+// Describes how a surface interacts with light: how bright it glows in shadow (ambient), how rough or smooth
+// it looks (diffuse/specular/shininess), whether it acts like a mirror (reflectivity), and whether light
+// passes through it like glass (transparency + ior).
 public class Material {
     public double ambient;
     public double diffuse;

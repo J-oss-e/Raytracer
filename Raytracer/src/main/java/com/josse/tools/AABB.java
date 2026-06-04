@@ -1,7 +1,8 @@
 package com.josse.tools;
 
 
-// Axis-aligned bounding box. Used in the BVH to cheaply reject rays before testing actual geometry.
+// An invisible box aligned to the world axes that wraps loosely around an object.
+// Rays test this box first — far cheaper than testing every triangle inside — and skip the contents if they miss.
 public class AABB {
     public Vector3D min;
     public Vector3D max;
@@ -12,14 +13,16 @@ public class AABB {
     }
 
 
-    // Slab test: intersects the ray with each axis pair and checks if all three overlap. Fast rejection for BVH traversal.
+    // Tests whether the ray hits the box. Think of the box as three pairs of parallel walls (one per axis).
+    // The ray hits the box only if it passes through all three pairs at overlapping distances; if it clears
+    // any pair, the ray misses and we return false immediately.
     public boolean intersect(Ray ray, double tMin, double tMax) {
-        // Check the ray against each axis slab (X=0, Y=1, Z=2). If any axis fails, the ray misses the box.
+        // Run the wall test for all three axis pairs: left/right (X=0), up/down (Y=1), front/back (Z=2).
         for (int a = 0; a < 3; a++) {
             double invD = 1.0 / ray.getDirection().get(a);
             double t0 = (min.get(a) - ray.getOrigin().get(a)) * invD;
             double t1 = (max.get(a) - ray.getOrigin().get(a)) * invD;
-            if (invD < 0.0) {
+            if (invD < 0.0) { // ray travels in the negative direction here — entry and exit distances are swapped, so fix that
                 double temp = t0;
                 t0 = t1;
                 t1 = temp;

@@ -5,7 +5,8 @@ import com.josse.tools.AABB;
 import com.josse.tools.Intersection;
 import com.josse.tools.Ray;
 
-// A node in the BVH acceleration tree. Stores two children and their combined bounding box.
+// A node in the scene's acceleration tree. Geometry is organized into a hierarchy of nested boxes:
+// if a ray misses the outer box it skips everything inside, so most triangles are never tested.
 public class BVHNode extends Object3D {
     public Object3D left;
     public Object3D right;
@@ -22,7 +23,8 @@ public class BVHNode extends Object3D {
         return this.bounds;
     }
 
-    // Test the node's bounding box first. If it misses, skip entirely. Otherwise test both children and return the closer hit.
+    // Check the outer bounding box first. If the ray misses it, nothing inside can be hit — skip the whole branch.
+    // If it does hit, test both child groups and return whichever intersection is closer to the camera.
     @Override
     public Intersection getIntersection(Ray ray) {
         AABB box = getBoundingBox();
@@ -37,10 +39,11 @@ public class BVHNode extends Object3D {
                new Intersection();
     }
 
-    // Recursively builds the BVH: picks a random split axis, sorts triangles by their centroid, splits in half, and recurses.
+    // Builds the tree top-down: pick a random axis, sort all triangles by their position along it, cut the list in
+    // half, then repeat on each half. This continues until every leaf holds a single triangle.
     public static BVHNode build(List<Triangle> triangles){
         final int axis = (int)(Math.random() * 3);
-        // Sort triangles by their centroid position along the chosen axis to prepare a balanced split.
+        // Order the triangles by where their center sits along the chosen axis, so the split divides them evenly in space.
         triangles.sort((a, b) -> {
             double aCentroid = a.getBoundingBox().centroid().get(axis);
             double bCentroid = b.getBoundingBox().centroid().get(axis);
@@ -48,7 +51,7 @@ public class BVHNode extends Object3D {
         });
         
         if (triangles.size() == 1) {
-            return new BVHNode(triangles.get(0), triangles.get(0));
+            return new BVHNode(triangles.get(0), triangles.get(0)); // only one triangle left — both child slots point to it so the bounding-box logic still works
         } else if (triangles.size() == 2) {
             return new BVHNode(triangles.get(0), triangles.get(1));
         } else {
