@@ -13,8 +13,14 @@ import com.josse.tools.Material;
 import com.josse.tools.ObjReader;
 import com.josse.tools.Ray;
 import com.josse.tools.Vector3D;
+import com.josse.lights.DirectionalLight;
+
+import java.awt.image.BufferedImage;
+import java.io.File;
+import javax.imageio.ImageIO;
 
 import javafx.application.Application;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.Group;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelWriter;
@@ -24,14 +30,16 @@ import javafx.stage.Stage;
 
 public class Raytracer extends Application {
 
-    private static final int WIDTH = 1200;
-    private static final int HEIGHT = 1200;
+    private static final int WIDTH = 1920;
+    private static final int HEIGHT = 1080;
 
     @Override
     public void start(Stage primaryStage) {
         Scene world = buildScene();
 
         WritableImage image = render(world);
+
+        savePng(image, "vaporwave_unlike.png");
 
         ImageView view = new ImageView(image);
         Group root = new Group(view);
@@ -47,7 +55,7 @@ public class Raytracer extends Application {
     private Scene buildScene() {
         Camera camera = new Camera(new Vector3D(0, 5, 20), 60.0, WIDTH, HEIGHT, 0.5, 300.0);
 
-        Scene scene = new Scene(camera, Color.LIGHTPINK);
+        Scene scene = new Scene(camera, Color.BLACK);
 
         // Floor
         Vector3D fl0 = new Vector3D(-1000, -1.5,  50);
@@ -62,10 +70,10 @@ public class Raytracer extends Application {
         scene.addObject(floor2);
 
         //mirror
-        Vector3D ml0 = new Vector3D(-15, -1.5,  -6);
-        Vector3D ml1 = new Vector3D( -5, -1.5,  -10);
-        Vector3D ml2 = new Vector3D( -5, 10, -10);
-        Vector3D ml3 = new Vector3D(-15, 10, -6);
+        Vector3D ml0 = new Vector3D(-20, -1.5,  -4);
+        Vector3D ml1 = new Vector3D( -10, -1.5,  -10);
+        Vector3D ml2 = new Vector3D( -10, 10, -10);
+        Vector3D ml3 = new Vector3D(-20, 10, -4);
         Triangle mirror1 = new Triangle(ml0, ml1, ml2, Color.LIGHTGRAY);
         Triangle mirror2 = new Triangle(ml0, ml2, ml3, Color.LIGHTGRAY);
         mirror1.setMaterial(new Material(0.02, 0.05, 0.9, 128, 0.92, 0.0, 1.0));
@@ -73,10 +81,10 @@ public class Raytracer extends Application {
         scene.addObject(mirror1);
         scene.addObject(mirror2);
 
-        Vector3D m0 = new Vector3D(15, -1.5,  -6);
-        Vector3D m1 = new Vector3D( 5, -1.5,  -10);
-        Vector3D m2 = new Vector3D( 5, 10, -10);
-        Vector3D m3 = new Vector3D(15, 10, -6);
+        Vector3D m0 = new Vector3D(20, -1.5,  -4);
+        Vector3D m1 = new Vector3D( 10, -1.5,  -10);
+        Vector3D m2 = new Vector3D( 10, 10, -10);
+        Vector3D m3 = new Vector3D(20, 10, -4);
         Triangle mirror3 = new Triangle(m0, m1, m2, Color.LIGHTGRAY);
         Triangle mirror4 = new Triangle(m0, m2, m3, Color.LIGHTGRAY);
         mirror3.setMaterial(new Material(0.02, 0.05, 0.9, 128, 0.92, 0.0, 1.0));
@@ -86,36 +94,37 @@ public class Raytracer extends Application {
 
 
         // Statue — center back
-        Model3D model = ObjReader.loadModel("Resources/Stephan_C.obj", Color.LIGHTBLUE, new Vector3D(0, -1.5, -5));
-        model.setMaterial(new Material(0.02, 0.4, 0.4, 64, 0.3, 0.0, 1.0));
+        Model3D model = ObjReader.loadModel("Resources/Statue of Liberty - Bombed.obj", Color.CYAN, new Vector3D(0, -1.5, -5), 15);
+        model.setMaterial(new Material(0.02, 0.4, 0.4, 128, 0.3, 0.0, 1.0));
         scene.addObject(model);
 
         // LEFT mirror emerald — faces the right sphere; camera sees right sphere
-        Model3D leftMirror = ObjReader.loadModel("Resources/Emeraldobj1.obj", Color.WHITE, new Vector3D(-6, -1.5, -4), 0.03);
+        Model3D leftMirror = ObjReader.loadModel("Resources/Emeraldobj1.obj", Color.BLUE, new Vector3D(-6, -1.5, 2), 0.03);
         leftMirror.setMaterial(new Material(0.02, 0.05, 0.9, 128, 0.92, 0.0, 1.0));
         scene.addObject(leftMirror);
 
         // RIGHT mirror emerald — symmetric partner, creates the hall-of-mirrors bounce
-        Model3D rightMirror = ObjReader.loadModel("Resources/Emeraldobj1.obj", Color.WHITE, new Vector3D(6, -1.5, -4), 0.03);
+        Model3D rightMirror = ObjReader.loadModel("Resources/Emeraldobj1.obj", Color.BLUE, new Vector3D(6, -1.5, 2), 0.03);
         rightMirror.setMaterial(new Material(0.02, 0.05, 0.9, 128, 0.92, 0.0, 1.0));
         scene.addObject(rightMirror);
 
         // Glass heart in front of the statue — IOR 1.5 bends rays so the statue
         // appears distorted and inverted through it (clearly shows refraction)
-        Model3D glassModel = ObjReader.loadModel("Resources/heart.obj", Color.WHITE, new Vector3D(0, 1, 2), 1.3);
-        glassModel.setMaterial(new Material(0.02, 0.02, 0.9, 128, 0.0, 0.9, 1.7));
-        scene.addObject(glassModel);
+        Model3D heart = ObjReader.loadModel("Resources/heart.obj", Color.RED, new Vector3D(0, 11, -14), 0.75);
+        heart.setMaterial(new Material(0.02, 0.4, 0.4, 128, 0.3, 0.0, 1.0));
+        //scene.addObject(heart);
 
         // Big backdrop circle — behind all objects, facing the camera
-        Circle backdrop = new Circle(new Vector3D(0, 4, -70), 50.0, new Vector3D(0, 0, 1), Color.LIGHTBLUE);
+        Circle backdrop = new Circle(new Vector3D(0, 4, -70), 50.0, new Vector3D(0, 0, 1), Color.WHITE);
         backdrop.setMaterial(new Material(0.1, 0.8, 0.2, 128, 0, 0.0, 1.0));
         scene.addObject(backdrop);
 
         // Main overhead point light
         scene.addLight(new PointLight(new Vector3D(0, 20, 5), Color.WHITE, 40));
-        scene.addLight(new PointLight(new Vector3D(0, 20, -5), Color.PURPLE, 50));
+        //scene.addLight(new PointLight(new Vector3D(0, 11, -7), Color.RED, 80));
+        //scene.addLight(new PointLight(new Vector3D(0, 10, 8), Color.PURPLE, 50));
         // Fill from the left so shadow sides aren't pitch black
-        scene.addLight(new PointLight(new Vector3D(-6, 6, 8), Color.WHITE, 20));
+        scene.addLight(new DirectionalLight(new Vector3D(-6, 6, 8), Color.PURPLE, 20));
 
         return scene;
     }
@@ -277,6 +286,16 @@ public class Raytracer extends Application {
         b = Math.min(1.0, b);
 
         return new Color(r, g, b, 1.0);
+    }
+
+    private void savePng(WritableImage image, String filename) {
+        try {
+            BufferedImage buf = SwingFXUtils.fromFXImage(image, null);
+            ImageIO.write(buf, "png", new File(filename));
+            System.out.println("Saved: " + new File(filename).getAbsolutePath());
+        } catch (Exception e) {
+            System.err.println("Could not save PNG: " + e.getMessage());
+        }
     }
 
     public static void main(String[] args) {
