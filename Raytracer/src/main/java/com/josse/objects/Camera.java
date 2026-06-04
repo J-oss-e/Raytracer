@@ -9,9 +9,13 @@ public class Camera {
     private double fov;
     private int width;
     private int height;
-
     private double near;
     private double far;
+
+    // Camera basis — precomputed from look-at in constructor
+    private Vector3D camRight;
+    private Vector3D camUp;
+    private Vector3D camForward;
 
     public Camera() {
         this.position = new Vector3D(0, 0, 0);
@@ -20,6 +24,7 @@ public class Camera {
         this.height = 400;
         this.near = 0.1;
         this.far = 1000.0;
+        computeBasis(new Vector3D(0, 0, -1), new Vector3D(0, 1, 0));
     }
 
     public Camera(Vector3D position, double fov, int width, int height) {
@@ -28,21 +33,44 @@ public class Camera {
 
     public Camera(Vector3D position, double fov, int width, int height,
                   double near, double far) {
+        // Default target: look straight down -Z from position
+        this(position, position.add(new Vector3D(0, 0, -1)), fov, width, height, near, far);
+    }
+
+    public Camera(Vector3D position, Vector3D target, double fov, int width, int height) {
+        this(position, target, fov, width, height, 0.1, 1000.0);
+    }
+
+    public Camera(Vector3D position, Vector3D target, double fov, int width, int height,
+                  double near, double far) {
         this.position = position;
         this.fov = fov;
         this.width = width;
         this.height = height;
         this.near = near;
         this.far = far;
+        computeBasis(target, new Vector3D(0, 1, 0));
+    }
+
+    // Builds the orthonormal camera basis from a target point and a world-up hint.
+    // forward = direction the camera looks; right and up define the film plane.
+    private void computeBasis(Vector3D target, Vector3D worldUp) {
+        camForward = target.subtract(position).normalize();
+        camRight   = camForward.cross(worldUp).normalize();
+        camUp      = camRight.cross(camForward).normalize();
     }
 
     public Ray generateRay(int x, int y) {
         double aspect = (double) width / (double) height;
-        double scale = Math.tan(Math.toRadians(fov) * 0.5);
-        double px = (2.0 * ((x + 0.5) / width) - 1.0) * aspect * scale;
+        double scale  = Math.tan(Math.toRadians(fov) * 0.5);
+        double px = (2.0 * ((x + 0.5) / width)  - 1.0) * aspect * scale;
         double py = (1.0 - 2.0 * ((y + 0.5) / height)) * scale;
 
-        Vector3D dir = new Vector3D(px, py, -1.0).normalize();
+        // Map the pixel offset into world space using the camera basis
+        Vector3D dir = camRight.scale(px)
+                               .add(camUp.scale(py))
+                               .add(camForward)
+                               .normalize();
         return new Ray(position, dir);
     }
 

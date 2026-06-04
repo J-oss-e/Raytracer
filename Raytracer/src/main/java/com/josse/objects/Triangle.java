@@ -96,9 +96,13 @@ public class Triangle extends Object3D{
 
     @Override
     public AABB getBoundingBox() {
+        final double PAD = 1e-4;
         Vector3D min = Vector3D.min(Vector3D.min(v0, v1), v2);
         Vector3D max = Vector3D.max(Vector3D.max(v0, v1), v2);
-        return new AABB(min, max);
+        return new AABB(
+            new Vector3D(min.x - PAD, min.y - PAD, min.z - PAD),
+            new Vector3D(max.x + PAD, max.y + PAD, max.z + PAD)
+        );
     }
 
     public Vector3D getV0() { return v0; }

@@ -13,19 +13,38 @@ import javafx.scene.paint.Color;
 
 public class ObjReader {
         public static Model3D loadModel(String path, Color color, Vector3D position) {
-            return loadModel(path, color, position, 1.0);
+            return loadModel(path, color, position, 1.0, 0, 0, 0);
         }
 
         public static Model3D loadModel(String path, Color color, Vector3D position, double scale) {
-            List<Triangle> triangles = loadTriangles(path, color, position, scale);
+            return loadModel(path, color, position, scale, 0, 0, 0);
+        }
+
+        public static Model3D loadModel(String path, Color color, Vector3D position, double scale,
+                                        double rotX, double rotY, double rotZ) {
+            List<Triangle> triangles = loadTriangles(path, color, position, scale, rotX, rotY, rotZ);
             return new Model3D(triangles, color, position);
         }
 
-        private static List<Triangle> loadTriangles(String path, Color color, Vector3D position) {
-            return loadTriangles(path, color, position, 1.0);
+        private static Vector3D rotateVertex(Vector3D v, double rx, double ry, double rz) {
+            double x = v.getX(), y = v.getY(), z = v.getZ();
+            // X-axis rotation
+            double cosX = Math.cos(rx), sinX = Math.sin(rx);
+            double y1 = y * cosX - z * sinX;
+            double z1 = y * sinX + z * cosX;
+            // Y-axis rotation
+            double cosY = Math.cos(ry), sinY = Math.sin(ry);
+            double x2 = x * cosY + z1 * sinY;
+            double z2 = -x * sinY + z1 * cosY;
+            // Z-axis rotation
+            double cosZ = Math.cos(rz), sinZ = Math.sin(rz);
+            double x3 = x2 * cosZ - y1 * sinZ;
+            double y3 = x2 * sinZ + y1 * cosZ;
+            return new Vector3D(x3, y3, z2);
         }
 
-        private static List<Triangle> loadTriangles(String path, Color color, Vector3D position, double scale) {
+        private static List<Triangle> loadTriangles(String path, Color color, Vector3D position, double scale,
+                                                     double rotX, double rotY, double rotZ) {
             List<Vector3D> vertices = new ArrayList<>();
             List<Vector3D> normals = new ArrayList<>();
             List<Triangle> triangles = new ArrayList<>();
@@ -34,17 +53,23 @@ public class ObjReader {
                 while ((linea = br.readLine()) != null) {
                     if (linea.startsWith("v ")) {
                         String[] partes = linea.split("\\s+");
-                        double x = Double.parseDouble(partes[1]) * scale + position.getX();
-                        double y = Double.parseDouble(partes[2]) * scale + position.getY();
-                        double z = Double.parseDouble(partes[3]) * scale + position.getZ();
-                        vertices.add(new Vector3D(x, y, z));
+                        Vector3D raw = new Vector3D(
+                            Double.parseDouble(partes[1]) * scale,
+                            Double.parseDouble(partes[2]) * scale,
+                            Double.parseDouble(partes[3]) * scale);
+                        Vector3D rotated = rotateVertex(raw, rotX, rotY, rotZ);
+                        vertices.add(new Vector3D(
+                            rotated.getX() + position.getX(),
+                            rotated.getY() + position.getY(),
+                            rotated.getZ() + position.getZ()));
                     }
                     else if(linea.startsWith("vn ")){
                         String[] partes = linea.split("\\s+");
-                        double x = Double.parseDouble(partes[1]);
-                        double y = Double.parseDouble(partes[2]);
-                        double z = Double.parseDouble(partes[3]);
-                        normals.add(new Vector3D(x, y, z).normalize());
+                        Vector3D raw = new Vector3D(
+                            Double.parseDouble(partes[1]),
+                            Double.parseDouble(partes[2]),
+                            Double.parseDouble(partes[3]));
+                        normals.add(rotateVertex(raw, rotX, rotY, rotZ).normalize());
                     }
                     else if(linea.startsWith("f ")) {
                         String[] partes = linea.split("\\s+");
